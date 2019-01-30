@@ -69,7 +69,7 @@ Additional options. Not used yet.}
 \references{
 Konishi S., Kitagawa G. 1996. Generalised information criteria in model selection. Biometrika. 83:875-890.
 
-Clavel, J., Aristide, L., Morlon, H., 2018. A Penalized Likelihood framework for high-dimensional phylogenetic comparative methods and an application to new-world monkeys brain evolution. Systematic Biology DOI:10.1093/sysbio/syy045.
+Clavel, J., Aristide, L., Morlon, H., 2019. A Penalized Likelihood framework for high-dimensional phylogenetic comparative methods and an application to new-world monkeys brain evolution. Syst. Biol. 68: 93-116.
 }
 
 \author{J. Clavel}
@@ -81,6 +81,7 @@ Clavel, J., Aristide, L., Morlon, H., 2018. A Penalized Likelihood framework for
 
 \examples{
 \donttest{
+require(mvMORPH)
 set.seed(123)
 n <- 32 # number of species
 p <- 2 # number of traits
