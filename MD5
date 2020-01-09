@@ -1,5 +1,5 @@
-caf9509c5a629534e8136e641312134d *DESCRIPTION
-fb73110f14e2d20b39a589c4583d5fa7 *NAMESPACE
+3c8e2a260d51ed942903b3f163761ff7 *DESCRIPTION
+0fab7673e7d56cb52d61d1b00cc4b597 *NAMESPACE
 6b5018e17d9439e6a898389e68e08b63 *R/BGB_functions.R
 6acbfae966a7bfa53bf9e1b9893d0a2b *R/BICompare.R
 4900f55b40fdd4409a6d4a730c6a936f *R/CreateBioGeoB_Object_subclade.R
@@ -30,7 +30,7 @@ c4a2f67b579002675cc4a5a44e2e9e46 *R/Phi.R
 ae5d5f82231c7dce84b4bbc78f4432ac *R/aPhenotypicModel.class.R
 a44fdc9b33180d848f061699ed47ed5f *R/base_sgd.R
 db73a57669567068541e5a76fb315e17 *R/createModel.R
-1c9d013962287e796f6936718a4d06d6 *R/fitTipData.R
+0b62e32eff7f241897d85dc8ff27056c *R/fitTipData.R
 00945a941c87eef455646963ff6c1455 *R/fit_ClaDS.R
 9c17b651835c15d3149e00e17aaf7226 *R/fit_ClaDS0.R
 f529ae7f922cc2e51319ac087883d405 *R/fit_bd.R
@@ -42,7 +42,7 @@ c0e04be86e53f1ad4447e1082ab82bb4 *R/fit_sgd.R
 9af405330f64950bf51b7007d023c533 *R/fit_t_comp_subgroup.R
 48da37ff22a0a19547ee57a69a2707d5 *R/fit_t_env.R
 5ea2421b8d0007ba21ddd98cd0ab40ac *R/fit_t_pl.R
-19eeafd9d39dafa7616c04d40bf3d75d *R/getDataLikelihood.R
+ec4ff0993c97a502322327f73d08c706 *R/getDataLikelihood.R
 5b70993fe34c8935bf84e56fb61eef63 *R/getMAPS_ClaDS.R
 3a9ea6b63fc9bfadc862a3e6f1b1fb2c *R/getMAPS_ClaDS0.R
 4eb5702427a8c6f3e38f6a50481f341e *R/getTipDistribution.R
@@ -53,15 +53,15 @@ f9e529b5ec78defae66c8c9ea8714221 *R/likelihood_bd.R
 c093daac9626b39be3ca89d17422018c *R/likelihood_coal_exp_mod.R
 939b14961eac07c4e420f2f8ba5dc47f *R/likelihood_coal_var.R
 efc70cf7e97c0e858e4b0f28b92d1306 *R/likelihood_sgd.R
-61c0f4ec99aeb2e50f66731c0817bbe2 *R/likelihood_subgroup_model.R
-2edaac105fec59d62f1146e6b6dd01d9 *R/likelihood_t_DD.R
-f446ca3dbbe2ca433538f33f6e289f89 *R/likelihood_t_DD_geog.R
-d083bd9d0ac8ba4a92a73c4d2334330f *R/likelihood_t_MC.R
-e08efbb0303b483022d3eb10f18ed221 *R/likelihood_t_MC_geog.R
+264b65040529fcd4f84280cd88fb1b77 *R/likelihood_subgroup_model.R
+09101d28e4387b60d66bb29c73b8abbb *R/likelihood_t_DD.R
+f42ec32e7d98c172df1a53044e687e87 *R/likelihood_t_DD_geog.R
+03ae133e2a16c504e7c7232cc6d8176a *R/likelihood_t_MC.R
+89e536d4fcc0dac1e1d0ec47eb8b512a *R/likelihood_t_MC_geog.R
 53bef064da807783490893cd48797faf *R/likelihood_t_env.R
 0f91f068389d6ac025b3f024a1db1e09 *R/modelSelection.R
 2ace1735f576fd5810587af51d14513f *R/phyl.pca_pl.R
-c4f64c58bbf7f195bd22c406bba37e2b *R/plot.fit_t.env.r
+c4f64c58bbf7f195bd22c406bba37e2b *R/plot.fit_t.env.R
 baec2f80828bcfa98fc138a0c4023cd7 *R/plot_BICompare.R
 77eeda3c04784adcb28ca1f1b0568855 *R/plot_ClaDS0_chains.R
 a9d0dbc0f59df7ffc535dc42a191ac5d *R/plot_ClaDS_chains.R
@@ -81,7 +81,7 @@ d59452a25b11edb9b064032748228eef *R/resortGeoObject.R
 5546fac46c467f90e968030a3629acee *R/sim.convergence.geo.R
 2864890a49612475ed5d793f5a123405 *R/sim.divergence.geo.R
 81413eecd8a27549e4da0285448a2413 *R/sim_ClaDS.R
-3fda6e826acdfc30480af1f8e9506cee *R/sim_env_bd.r
+3fda6e826acdfc30480af1f8e9506cee *R/sim_env_bd.R
 0add8eacf65f899d0652ace486f37a0f *R/sim_sgd.R
 1055b91978a36002740071a720d2c6e3 *R/sim_t_comp.R
 2294c7efd93093e9735ef1f8d33fd6b9 *R/sim_t_env.R
@@ -221,6 +221,7 @@ f58815f2cf87d31f27afe1d393aaa81b *man/sim_t_env.Rd
 b90d596dc794df55223ed1a456432c28 *man/simulateTipData.Rd
 a1961ebf333a6ad8f1ac5bb524bb6535 *man/spectR.Rd
 7e6a0f828e7f2a0bad06f57f01840d32 *man/spectR_t.Rd
+eaf17eb78d884310d57ebf9ffb2e1bd9 *src/RPANDA_init.c
 6a59610d6b4e449d0673c6ee484c5655 *src/diversif_lognormal.c
 13ac1121f103157b1ed76045747d3a1a *tests/test-all.R
 f521acc16768d96677b570061d06ddce *tests/testthat/test-fit-bd.r
