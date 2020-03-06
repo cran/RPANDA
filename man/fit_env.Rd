@@ -88,7 +88,7 @@ conditioning to use to fit the model:
 %The rate models here are function of environmental data fixed by
 %env_data.
 %Hence, if the parameter controlling the variation of \eqn{\lambda} with time is estimated to be positive (for example), this means that the speciation rate decreases from past to present.
-}
+Note that abs(f.lamb) and abs(f.mu) are used in the likelihood computation as speciation and extinction rates should always be positive. A consequence of this is that negative speciation/extinction rates estimates can be returned. They should be interpreted in aboslute terms. See Morlon et al. 2020 for a more detailed explanation.}
 
 \note{
 	The speed of convergence of the fit might depend on the degree of freedom chosen to define the spline. 
@@ -99,6 +99,8 @@ Morlon, H., Parsons, T.L. and Plotkin, J.B. (2011) Reconciling molecular phyloge
 Condamine, F.L., Rolland, J., and Morlon, H. (2013) Macroevolutionary perspectives to environmental change, Eco Lett 16: 72-85
 
 Morlon, H. (2014) Phylogenetic approaches for studying diversification, Eco Lett, 17:508-525
+
+Morlon, H., Rolland, J. and Condamine, F. (2020) Response to Technical Comment ‘A cautionary note for users of linear diversification dependencies’, Eco Lett
 }
 
 \author{H Morlon and F Condamine}

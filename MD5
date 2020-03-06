@@ -1,5 +1,5 @@
-3c8e2a260d51ed942903b3f163761ff7 *DESCRIPTION
-0fab7673e7d56cb52d61d1b00cc4b597 *NAMESPACE
+b5dc7e6685e9bcfa53a0844113ad7b5d *DESCRIPTION
+aa61b9c7a07d2a1b679f0f52a049e951 *NAMESPACE
 6b5018e17d9439e6a898389e68e08b63 *R/BGB_functions.R
 6acbfae966a7bfa53bf9e1b9893d0a2b *R/BICompare.R
 4900f55b40fdd4409a6d4a730c6a936f *R/CreateBioGeoB_Object_subclade.R
@@ -16,9 +16,9 @@ e6af86c43b4a99054cef04fe4e444b0c *R/DDlin.rescale.geog.R
 63a951df8b834dcdefca882234041085 *R/DDlin_geo_ADiag.R
 0327ef7b8cf091bf2b4c12dc1d84bd4e *R/DDlin_nogeo_ADiag.R
 13e50b5d88c5a5a0325726f20934387e *R/GIC.R
-521e0c54d9e1e3f94e94f8d2b32a4080 *R/JSDt_cluster.R
-3581d522228c1c8b21b6bfd062fcdc31 *R/JSDtree.R
-5bf565a704551cc52293af2386ab306b *R/JSDtree_cluster.R
+10c60a350ee4b21e3c246980d5294a7d *R/JSDt_cluster.R
+cb561ccd53630f806ffc54813cb0575a *R/JSDtree.R
+7d104826e713cfdf3d72ef7f978d87b5 *R/JSDtree_cluster.R
 d1a85b17809f93c4bc835874db8ba31c *R/MC.rescale.R
 d2fe378689e28557a2d9cf9075d8d9b2 *R/MC.rescale_geog.R
 268539d58227d9af2d25509aae9202db *R/MC_geo_PM.R
@@ -36,11 +36,11 @@ db73a57669567068541e5a76fb315e17 *R/createModel.R
 f529ae7f922cc2e51319ac087883d405 *R/fit_bd.R
 7117cf2145f8d63a6e17b0d19c0e0aec *R/fit_coal_cst.R
 b8bb60aec95ea5640f23ee747a801d2b *R/fit_coal_var.R
-6f64a066447111c0f4ee2a65fd2c5e5a *R/fit_env.R
+9023e17b7e69385efda42a77320f3be1 *R/fit_env.R
 c0e04be86e53f1ad4447e1082ab82bb4 *R/fit_sgd.R
 851327fa3d5bffd8bf206b761071423a *R/fit_t_comp.R
 9af405330f64950bf51b7007d023c533 *R/fit_t_comp_subgroup.R
-48da37ff22a0a19547ee57a69a2707d5 *R/fit_t_env.R
+af2c642d772942db008d7db50ed49790 *R/fit_t_env.R
 5ea2421b8d0007ba21ddd98cd0ab40ac *R/fit_t_pl.R
 ec4ff0993c97a502322327f73d08c706 *R/getDataLikelihood.R
 5b70993fe34c8935bf84e56fb61eef63 *R/getMAPS_ClaDS.R
@@ -61,7 +61,7 @@ f42ec32e7d98c172df1a53044e687e87 *R/likelihood_t_DD_geog.R
 53bef064da807783490893cd48797faf *R/likelihood_t_env.R
 0f91f068389d6ac025b3f024a1db1e09 *R/modelSelection.R
 2ace1735f576fd5810587af51d14513f *R/phyl.pca_pl.R
-c4f64c58bbf7f195bd22c406bba37e2b *R/plot.fit_t.env.R
+c4f64c58bbf7f195bd22c406bba37e2b *R/plot.fit_t.env.r
 baec2f80828bcfa98fc138a0c4023cd7 *R/plot_BICompare.R
 77eeda3c04784adcb28ca1f1b0568855 *R/plot_ClaDS0_chains.R
 a9d0dbc0f59df7ffc535dc42a191ac5d *R/plot_ClaDS_chains.R
@@ -81,7 +81,8 @@ d59452a25b11edb9b064032748228eef *R/resortGeoObject.R
 5546fac46c467f90e968030a3629acee *R/sim.convergence.geo.R
 2864890a49612475ed5d793f5a123405 *R/sim.divergence.geo.R
 81413eecd8a27549e4da0285448a2413 *R/sim_ClaDS.R
-3fda6e826acdfc30480af1f8e9506cee *R/sim_env_bd.R
+0c3220458c0813c329221d57cd37a7b0 *R/sim_MCBD.R
+3fda6e826acdfc30480af1f8e9506cee *R/sim_env_bd.r
 0add8eacf65f899d0652ace486f37a0f *R/sim_sgd.R
 1055b91978a36002740071a720d2c6e3 *R/sim_t_comp.R
 2294c7efd93093e9735ef1f8d33fd6b9 *R/sim_t_env.R
@@ -91,7 +92,7 @@ ca54daa31b968cb94137cde38d0132a4 *R/spectR_t.R
 290c89ef86637c7b1baba5b2a8642d8b *R/stratified_BGB_to_tables.R
 6d34125af3f95b90f319f81344644d70 *R/trimSimmap.R
 638d9dcb597153bd59c340506bccfa26 *R/utils.R
-6957fd262375c71603c6c55a61f086b9 *README.md
+77b6acdb7d251c37283dc8de1dd00c37 *README.md
 d95ed2ed975ef9a85a4e061085b56aeb *data/Anolis.data.rda
 bea072a0086ddb231bde6bd83a5bb398 *data/BGB.examples.rda
 44b3ef9f95e10176b4c9b8964fcc4907 *data/Balaenopteridae.rda
@@ -149,7 +150,7 @@ c4d73b88cdb749d869e4972e144b90b8 *man/PhenotypicModel-class.Rd
 202e18392532a4da4cc56814f0cf913a *man/Phyllostomidae.Rd
 da5d184254d121be4ede02104112ed1a *man/Phyllostomidae_genera.Rd
 9d18f677132a9e213de7dcce0c4d986f *man/Posdef.Rd
-bb5086cdaa66b55b75532249080a8504 *man/RPANDA-package.Rd
+c9d4b8c85927076091f7667baefb26f2 *man/RPANDA-package.Rd
 dcae8400f4c81ebb520e916a6d800759 *man/ancestral.Rd
 5326212d91c0e6322350cb905a10dfbd *man/co2.Rd
 ec102e0ea9348d5b4498e4532b393cac *man/co2_res.Rd
@@ -161,13 +162,13 @@ a76990c85354a723f39d9fe9c3e1e7e3 *man/d13c.Rd
 aab54d9c9f453c8155ea07d7a7207f20 *man/fitTipData.Rd
 12c206cf318491ddb65e71bdef3f6518 *man/fit_ClaDS.Rd
 bcac28b66567c04ea9e63f1fd4eff55b *man/fit_ClaDS0.Rd
-27ed52bd82036113f4c5eca013abd323 *man/fit_bd.Rd
+524d531c5a05bcb5d2f7141aaae156fc *man/fit_bd.Rd
 f20804bd1864fce0aa451062e02eba2d *man/fit_coal_cst.Rd
 d4f4c6ec4d4c6bad7fb896d229d784bf *man/fit_coal_var.Rd
-026d843c05eb1bb87d4a3e3f2f2ad336 *man/fit_env.Rd
+c2f9519b533646afa48ce82df429feba *man/fit_env.Rd
 4cef65cea72cb7a61780c3c8bc4b1365 *man/fit_sgd.Rd
-0bb7bc603c67f3e5990e2c4443728730 *man/fit_t_comp.Rd
-420e05aa74722a829c323ccf59566b55 *man/fit_t_comp_subgroup.Rd
+6797e492789e3cd3316b37ae5610a881 *man/fit_t_comp.Rd
+e453e02ca48181a3a2259fb1f831837c *man/fit_t_comp_subgroup.Rd
 55c91b2ea44ff384e0833bdc185fa546 *man/fit_t_env.Rd
 ffb6c3d645c76a8bd9236db34b7c66f5 *man/fit_t_pl.Rd
 9e66f2ad4738e132adc9d38559da20d2 *man/foraminifera.Rd
@@ -213,6 +214,7 @@ f23903e57272fd66f43a7b269e838f1f *man/radiolaria.Rd
 c3e25d8576a44a26c087932e3225bda7 *man/sim.convergence.geo.Rd
 a5394ec49140eff86d4206e0c4b1559a *man/sim.divergence.geo.Rd
 bcd86a553d9a2dc1828dbdac2e53018f *man/sim_ClaDS.Rd
+e729d7c17125ed451915d1402b96ef83 *man/sim_MCBD.Rd
 918ecf907728b549fe94dc9febf7fc0f *man/sim_env_bd.Rd
 dbfecd8d80bd0f9b23b687a5f7d19f30 *man/sim_sgd.Rd
 98c8a28cfc4d14cacc47f519a529b74a *man/sim_t_comp.Rd

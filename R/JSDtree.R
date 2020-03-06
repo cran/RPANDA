@@ -1,4 +1,3 @@
-#get Jensen-Shannon divergence	
 JSDtree <- function(phylo,meth=c("standard")){
 	dist.JSD <- function(inMatrix, pseudocount=0.000001, ...) {
 	KLD <- function(x,y) sum(x*log(x/y))
@@ -58,17 +57,18 @@ JSDist <- function(x,y) sqrt(dist.JSD(x,y))
 		for(i in 1:length(treeEigen)){
 			m[[i]]<-subset(treeEigen[[i]]$values,
 				treeEigen[[i]]$values>=1)
-			d[[i]]<-dens(m[[i]])	
+			d[[i]]<-density(m[[i]])	
 		}
 	Ds<-c()
 		for(i in 1:length(d)){
 			Ds<-as.data.frame(cbind(Ds,d[[i]]$x))
 			}
-			if (is.null(names(phylo))) {colnames(Ds) <- seq(1,length(d),1)}
+			if (is.null(names(phylo))) {
+				colnames(Ds) <- seq(1,length(d),1)}
 			else {colnames(Ds) <- names(phylo)}
-
+			Dsp<-Ds+abs(2*min(Ds))	
 			
-	JSD<-as.matrix(JSDist(Ds))	
+	JSD<-as.matrix(JSDist(Dsp))	
 	}	
 	
 		if(meth=="normal1"){
@@ -93,8 +93,8 @@ JSDist <- function(x,y) sqrt(dist.JSD(x,y))
 			
 			if (is.null(names(phylo))) {colnames(Ds) <- seq(1,length(d),1)}
 			else {colnames(Ds) <- names(phylo)}
-	
-	JSD<-as.matrix(JSDist(abs(Ds)))
+			Dsp<-Ds+abs(2*min(Ds))
+	JSD<-as.matrix(JSDist(abs(Dsp)))
 	}
 	
 	if(meth=="normal2"){
@@ -119,8 +119,8 @@ JSDist <- function(x,y) sqrt(dist.JSD(x,y))
 			
 			if (is.null(names(phylo))) {colnames(Ds) <- seq(1,length(d),1)}
 			else {colnames(Ds) <- names(phylo)}
-	
-	JSD<-as.matrix(JSDist(abs(Ds)))	
+			Dsp<-Ds+abs(2*min(Ds))
+	JSD<-as.matrix(JSDist(abs(Dsp)))	
 }
 
 #print matrix		
