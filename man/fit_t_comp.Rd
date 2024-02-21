@@ -20,7 +20,7 @@ an object of type 'phylo' (see ape documentation)
 a named vector of trait values with names matching \code{phylo$tip.label}
 }
   \item{error}{
-if including measurement error, a named vector of error values (the standard error of the [intraspecific] mean) with names matching \code{phylo$tip.label}
+A named vector with standard errors (SE) of trait values for each species (with names matching \code{"phylo$tip.label"}). The default is NULL, in this case potential error is ignored in the fit. If set to NA, the SE is estimated from the data (to be used when there are no error measurements, a nuisance parameter is estimated). Note: When standard errors are provided, a nuisance parameter is also estimated.
 }
 
   \item{model}{
@@ -73,6 +73,8 @@ For two-regime fits, particularly under the matching competition model, we recom
 }
 
 \references{
+	Drury, J., Clavel, J. Tobias, J., Rolland, J., Sheard, C., and Morlon, H. Tempo and mode of morphological evolution are decoupled from latitude in birds. \emph{PLOS Biology} doi:10.1371/journal.pbio.3001270
+	
 	Drury, J., Clavel, J., Manceau, M., and Morlon, H. 2016. Estimating the effect of competition on trait evolution using maximum likelihood inference. 
 \emph{Systematic Biology} 65:700-710
 
@@ -105,17 +107,32 @@ data(Anolis.data)
 geography.object<-Anolis.data$geography.object
 pPC1<-Anolis.data$data
 phylo<-Anolis.data$phylo
+regime.map<-Anolis.data$regime.map
 
 \donttest{
-#Fit three models without biogeography to pPC1 data
+# Fit three models without biogeography to pPC1 data
 MC.fit<-fit_t_comp(phylo, pPC1, model="MC")
 DDlin.fit<-fit_t_comp(phylo, pPC1, model="DDlin")
 DDexp.fit<-fit_t_comp(phylo, pPC1, model="DDexp")
 
-#Now fit models that incorporate biogeography, NOTE these models take longer to fit
+# Now fit models that incorporate biogeography, NOTE these models take longer to fit
 MC.geo.fit<-fit_t_comp(phylo, pPC1, model="MC", geography.object=geography.object)
 DDlin.geo.fit<-fit_t_comp(phylo, pPC1,model="DDlin", geography.object=geography.object)
 DDexp.geo.fit<-fit_t_comp(phylo, pPC1, model="DDexp", geography.object=geography.object)
+
+# Now fit models that estimate parameters separately according to different 'regimes'
+MC.two_regime.fit<-fit_t_comp(phylo, pPC1, model="MC", regime.map=regime.map)
+DDlin.two_regime.fit<-fit_t_comp(phylo, pPC1,model="DDlin", regime.map=regime.map)
+DDexp.two_regime.fit<-fit_t_comp(phylo, pPC1, model="DDexp", regime.map=regime.map)
+
+# Now fit models that estimate parameters separately according to different 'regimes', 
+# including biogeography
+MC.two_regime.geo.fit<-fit_t_comp(phylo, pPC1, model="MC", 
+  geography.object=geography.object, regime.map=regime.map)
+DDlin.two_regime.geo.fit<-fit_t_comp(phylo, pPC1,model="DDlin", 
+  geography.object=geography.object, regime.map=regime.map)
+DDexp.two_regime.geo.fit<-fit_t_comp(phylo, pPC1, model="DDexp", 
+  geography.object=geography.object, regime.map=regime.map)
 }
 
 }

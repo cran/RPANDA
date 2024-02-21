@@ -66,7 +66,8 @@ fit_t_pl <- function(Y, tree, model=c("BM","OU","EB","lambda"), method=c("RidgeA
     # Parameters
     if(ncol(Y)==1) stop("Only works with multivariate datasets")
     n <- nO <- nrow(Y)
-    if(model=="OU" & !is.ultrametric(tree)) nC <- n else nC <- n-1
+    #if(model=="OU" & !is.ultrametric(tree)) nC <- n else nC <- n-1 # because previous version did not used a pruning algorithm?
+    nC <- n-1
     p <- ncol(Y)
     if(REML==TRUE) n <- n-1
     
@@ -88,7 +89,7 @@ fit_t_pl <- function(Y, tree, model=c("BM","OU","EB","lambda"), method=c("RidgeA
     }
     
     # Warning for rotation invariance
-    if(method=="LASSO" | method=="LASSOapprox" | targM=="Variance") warning("The LASSO penalty and \"Variance\" target should not be used on rotated data (see Clavel et al. 2018 for further details on applicability)")
+    if(method=="LASSO" | method=="LASSOapprox" | targM=="Variance") warning("The LASSO penalty and \"Variance\" target should not be used on rotated data (see Clavel et al. 2019 for further details on applicability)")
     
     # Identifying tips values
     tipsIndices <- which(tree$edge[, 2] <= Ntip(tree))

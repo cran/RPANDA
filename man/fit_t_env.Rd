@@ -23,7 +23,7 @@ A named vector of phenotypic trait values.
 Environmental data, given as a time continuous function (see, e.g. splinefun) or a data frame with two columns. The first column is time, the second column is the environmental data (temperature for instance).
 }
   \item{error}{
-A named vector with standard error (SE) for each species. Default is NULL, if NA, then the SE is estimated from the data.
+A named vector with standard errors (SE) of trait values for each species (with names matching \code{"phylo$tip.label"}). The default is NULL, in this case potential error is ignored in the fit. If set to NA, the SE is estimated from the data (to be used when there are no error measurements, a nuisance parameter is estimated). Note: When standard errors are provided, a nuisance parameter is also estimated.
 }
   \item{model}{
 The model describing the functional form of variation of the evolutionary rate \eqn{\sigma^2} with time and the environmental variable. Default models are "EnvExp" and "EnvLin" (see details). An user defined function of any functional form may be used (forward in time).
@@ -57,7 +57,7 @@ Arguments to be passed to the function. See details.
   \item{env_func}{the environmental function}
   \item{tot_time}{the root age of the tree}
   \item{model}{the fitted model (default models or user specified)}
-  \item{SE}{the estimated SE for species mean when "error=NA"}
+  \item{nuisance}{maximum-likelihood estimate of \code{nuisance}, the unknown, nuisance contribution to measurement error when \code{error} argument is used (i.e., NA or a vector provided by the user)}
 }
 
 \details{
@@ -125,7 +125,7 @@ The various options are passed through "...".
 	The speed of convergence of the fit might depend on the degree of freedom chosen to define the spline. 
 }
 \references{
-Clavel, J. & Morlon, H., 2017. Accelerated body size evolution during cold climatic periods in the Cenozoic. Proceedings of the National Academy of Science, 114(16): 4183-4188.
+Clavel, J. & Morlon, H., 2017. Accelerated body size evolution during cold climatic periods in the Cenozoic. Proceedings of the National Academy of Sciences, 114(16): 4183-4188.
 }
 
 \author{J. Clavel}

@@ -1,4 +1,4 @@
-fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regime=FALSE, method="Nelder-Mead", echo=TRUE, ...){
+fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error=NULL, two.regime=FALSE, method="Nelder-Mead", echo=TRUE, ...){
   pars = NULL
   model = match.arg(model)[1]
   args = list(...)
@@ -25,8 +25,16 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
     ## Index error
     nuisance=TRUE
     index_error<-sapply(1:nobs, function(x){ which(phylo$edge[,2]==x)})
+    
+    # if NA is provided to "error", then we can estimate nuisance even if we don't have known measurement errors
+    if(any(is.na(error))){
+      error <- rep(0, Ntip(phylo))
+      names(error) = phylo$tip.label
+    } 
+    
   } else {
-	stop("provide measurement error")	
+    nuisance = FALSE
+	#stop("provide measurement error")	
   }
   
   # for OUM
@@ -35,7 +43,12 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
   }
   
   # for OU1 et random root
-  if(model=="OU" && two.regime==FALSE && fixedRoot==FALSE){
+  if((model=="OU" && two.regime==FALSE && fixedRoot==FALSE)){
+      precalc<-mv.Precalc(phylo, nb.traits=1, param=list(model="OU1", root=FALSE))
+  }
+  
+  # do the same if the tree is not ultrametric
+  if(model=="OU" && two.regime==FALSE && !is.ultrametric(phylo)){
       precalc<-mv.Precalc(phylo, nb.traits=1, param=list(model="OU1", root=FALSE))
   }
   
@@ -101,10 +114,8 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
                   phy$edge.length <- phy$edge.length*sigma2 # scaling for BM sigma
                   
                       if(!is.null(error) & nuisance==TRUE){
-                          nuisance = exp(par[2])
-                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2 + nuisance
-                      }else{
-                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2
+                          nuis = exp(par[2])
+                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2 + nuis
                       }
                   
                   # ll computation
@@ -115,10 +126,8 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
                  phy$edge.length <- phy$mapped.edge%*%sigma2 # scaling for BMM sigma
                   
                       if(!is.null(error) & nuisance==TRUE){
-                          nuisance = exp(par[regimes+1])
-                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2 + nuisance
-                      }else{
-                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2
+                          nuis = exp(par[regimes+1])
+                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2 + nuis
                       }
                   
                   # ll computation
@@ -130,29 +139,42 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
                   
                   # Tree transformation
                 if(fixedRoot){ # to add later?
-                    
-                  phy <- .phyOU(phy, alpha)
-                  phy$edge.length <- phy$edge.length*sigma2 
-                  
-                      if(!is.null(error) & nuisance==TRUE){
-                          nuisance = exp(par[3])
-                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2 + nuisance
-                      }else{
-                          phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2
-                      }
-                  
-                  # ll computation
-                  llik <- mvLL(phy, data, method="pic", param=list(estim=FALSE, sigma=1, check=TRUE)) 
-                  
+                
+                    if(is.ultrametric(phy)){
+                        phy <- .phyOU(phy, alpha)
+                        phy$edge.length <- phy$edge.length*sigma2
+                        
+                        if(!is.null(error) & nuisance==TRUE){
+                            nuis = exp(par[3])
+                            phy$edge.length[index_error]<-phy$edge.length[index_error]+ error^2 + nuis
+                        }
+                        
+                        # ll computation
+                        llik <- mvLL(phy, data, method="pic", param=list(estim=FALSE, sigma=1, check=TRUE))
+                    }else{
+                        
+                        V<-.Call(C_panda_covar_ou_fixed, A=precalc$C1, alpha=alpha, sigma=sigma2)
+                        # error
+                         if(!is.null(error) & nuisance==TRUE){
+                           nuis = exp(par[3])
+                           diag(V) <- diag(V) + error^2 + nuis
+                         }
+                        
+                        # design matrix
+                        W <- .Call(C_panda_weights, nterm=as.integer(nobs), epochs=precalc$epochs,
+                                 lambda=alpha, S=1, S1=1,
+                                 beta=precalc$listReg, root=as.integer(0))
+                        
+                        # ll computation
+                        llik <- mvLL(V, data, method="rpf", param=list(D=W))
+                    }
                   }else{
                   
                    V<-.Call(C_panda_covar_ou_random, A=precalc$C1, alpha=alpha, sigma=sigma2)
                     
                    if(!is.null(error) & nuisance==TRUE){
-                     nuisance = exp(par[3])
-                     diag(V) <- diag(V) + error^2 + nuisance
-                   }else{
-                     diag(V) <- diag(V) + error^2   
+                     nuis = exp(par[3])
+                     diag(V) <- diag(V) + error^2 + nuis
                    }
                   
                   # design matrix
@@ -182,10 +204,8 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
                    else  V<-.Call(C_panda_covar_ou_random, A=precalc$C1, alpha=alpha, sigma=sigma2)
                   
                    if(!is.null(error) & nuisance==TRUE){
-                     nuisance = exp(par[3])
-                     diag(V) <- diag(V) + error^2 + nuisance
-                   }else{
-                     diag(V) <- diag(V) + error^2   
+                     nuis = exp(par[3])
+                     diag(V) <- diag(V) + error^2 + nuis
                    }
                   
                   # design matrix
@@ -205,10 +225,8 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
                 phy_temp = transform_EB(phy, beta=rate, sigmasq=sigma2)
                 
               	if(!is.null(error) & nuisance==TRUE){
-                          nuisance = exp(par[3])
-                          phy_temp$edge.length[index_error]<-phy_temp$edge.length[index_error]+ error^2 + nuisance
-                      }else{
-                          phy_temp$edge.length[index_error]<-phy_temp$edge.length[index_error]+ error^2
+                          nuis = exp(par[3])
+                          phy_temp$edge.length[index_error]<-phy_temp$edge.length[index_error]+ error^2 + nuis
                       }
                   
                   # ll computation
@@ -219,6 +237,16 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
         return(llik)
     }
     
+    # single variable optimization uses analyttical solution instead?
+    if(mod=="BM1" & is.null(error)) {
+        estimModelfit <- mvLL(phylo, data, method="pic", param=list(estim=TRUE, check=TRUE))
+        estimModel <- list(par=log(estimModelfit$sigma), value=estimModelfit$logl, counts=0, message="analytical solution")
+        estimModel$par <- log(as.numeric(estimModelfit$sigma))
+        estimModel$theta <- estimModelfit$theta
+        estimModel$value <- -estimModelfit$logl
+        estimModel$convergence <- 0
+        
+    }else{
     # optimization
     if(echo==TRUE) message("Start optimization. Please wait...")
     estimModel <- optim(pars,
@@ -228,17 +256,18 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
                         lower=lower,
                         control=list(maxit=2000)
                         )
+    }
     
     # ancestral states/optimums
     if(echo==TRUE) message("Done. retrieve parameters and results...")
     theta <- as.numeric(llik(estimModel$par, phy=phylo, data=data, mod=mod, error=error)$theta)
     
     # param
-    if(model=="EB1"){
+    if(mod=="EB1"){
     	param = exp(estimModel$par)
-    	param[2] = -abs(log(param[2]))
+    	param[2] = -abs(estimModel$par[2])
     } else {
-    param = exp(estimModel$par)
+        param = exp(estimModel$par)
     }
     
     if(nuisance){
@@ -268,13 +297,13 @@ fit_t_standard <- function(phylo, data, model=c("BM","OU","EB"), error, two.regi
     
     # return results
     
-    res <- list(logl=LL, AIC=AIC, AICc=AICc, param=param, theta=theta, nb_param=nparam, opt=estimModel)
+    res <- list(logl=LL, aic=AIC, aicc=AICc, param=param, theta=theta, nb_param=nparam, opt=estimModel)
     
-    if(mod=="BM1"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$AIC,", aicc = ",res$AICc,", free.parameters = 3, sig2 = ",as.numeric(res$param[1]),", nuisance = ",as.numeric(res$param[2]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
-    if(mod=="OU1"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$AIC,", aicc = ",res$AICc,", free.parameters = 4, sig2 = ",as.numeric(res$param[1]),", alpha = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
-    if(mod=="EB1"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$AIC,", aicc = ",res$AICc,", free.parameters = 4, sig2 = ",as.numeric(res$param[1]),", r = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
-    if(mod=="BMM"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$AIC,", aicc = ",res$AICc,", free.parameters = 4, sig2_",colnames(phylo$mapped.edge)[1]," = ",as.numeric(res$param[1]),", sig2_",colnames(phylo$mapped.edge)[2]," = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
-    if(mod=="OUM"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$AIC,", aicc = ",res$AICc,", free.parameters = 5, sig2 = ",as.numeric(res$param[1]),", alpha = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0_",names(res$theta)[1]," = ",as.numeric(res$theta[1]),", z0_",names(res$theta)[2]," = ",as.numeric(res$theta[2]),", convergence = ",res$opt$convergence,")")))}
+    if(mod=="BM1"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$aic,", aicc = ",res$aicc,", free.parameters = ",nparam, ", sig2 = ",as.numeric(res$param[1]),", nuisance = ",as.numeric(res$param[2]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
+    if(mod=="OU1"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$aic,", aicc = ",res$aicc,", free.parameters = ",nparam, ", sig2 = ",as.numeric(res$param[1]),", alpha = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
+    if(mod=="EB1"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$aic,", aicc = ",res$aicc,", free.parameters =",nparam, ", sig2 = ",as.numeric(res$param[1]),", r = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
+    if(mod=="BMM"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$aic,", aicc = ",res$aicc,", free.parameters = ",nparam, ", sig2_",colnames(phylo$mapped.edge)[1]," = ",as.numeric(res$param[1]),", sig2_",colnames(phylo$mapped.edge)[2]," = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0 = ",res$theta,", convergence = ",res$opt$convergence,")")))}
+    if(mod=="OUM"){eval(parse(text=paste0("results<-list(LH = ",res$logl,", aic = ",res$aic,", aicc = ",res$aicc,", free.parameters = ",nparam, ", sig2 = ",as.numeric(res$param[1]),", alpha = ",as.numeric(res$param[2]),", nuisance = ",as.numeric(res$param[3]),", z0_",names(res$theta)[1]," = ",as.numeric(res$theta[1]),", z0_",names(res$theta)[2]," = ",as.numeric(res$theta[2]),", convergence = ",res$opt$convergence,")")))}
     
     }
     return(res)
