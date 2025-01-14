@@ -4,7 +4,7 @@ sim.BipartiteEvol=function(nx,ny=nx,NG,dSpace=Inf,D=1,muP,muH,alphaP=0,alphaH=0,
 
   N=nx*ny     # number of individuals
   timeStep=floor(sqrt(NG/(nH+nP)))
-  oneByOne=F
+  oneByOne=FALSE
 
   parentsP=1:N
   parentsH=1:N
@@ -28,13 +28,13 @@ sim.BipartiteEvol=function(nx,ny=nx,NG,dSpace=Inf,D=1,muP,muH,alphaP=0,alphaH=0,
   if(is.null(H)) H=matrix(iniH,nrow=D,ncol=N)
   
   # creation of lists to help with the execution time
-  Phist=list(a=lapply(1:D,function(i){Matrix::Matrix(0,nrow=1,ncol=N,sparse=T)}))
-  Hhist=list(a=lapply(1:D,function(i){Matrix::Matrix(0,nrow=1,ncol=N,sparse=T)}))
+  Phist=list(a=lapply(1:D,function(i){Matrix::Matrix(0,nrow=1,ncol=N,sparse=TRUE)}))
+  Hhist=list(a=lapply(1:D,function(i){Matrix::Matrix(0,nrow=1,ncol=N,sparse=TRUE)}))
   for(j in 1:D){
     Phist[[1]][[j]][1,]=P[j,]
     Hhist[[1]][[j]][1,]=H[j,]
   }
-  Pmut=list(a=Matrix::Matrix(0,nrow=1,ncol=N,sparse=T))
+  Pmut=list(a=Matrix::Matrix(0,nrow=1,ncol=N,sparse=TRUE))
   Hmut=Pmut
   Pgen=Pmut
   Hgen=Pmut
@@ -53,7 +53,7 @@ sim.BipartiteEvol=function(nx,ny=nx,NG,dSpace=Inf,D=1,muP,muH,alphaP=0,alphaH=0,
     t=0
     
     # creation of the matrices in which we record what happens 
-    phist=lapply(1:D,function(e){Matrix::Matrix(0,nrow=NTime,ncol=N,sparse=T)})  # trait of P when there is a birth/death
+    phist=lapply(1:D,function(e){Matrix::Matrix(0,nrow=NTime,ncol=N,sparse=TRUE)})  # trait of P when there is a birth/death
     hhist=phist         # trait of H when there is a birth/death
     pmut=phist[[1]]     # number of mutations for P
     hmut=phist[[1]]     # number of mutations for H
@@ -116,7 +116,7 @@ sim.BipartiteEvol=function(nx,ny=nx,NG,dSpace=Inf,D=1,muP,muH,alphaP=0,alphaH=0,
         # for H
         if(sum(mutH)>0){
           if(oneByOne){
-            where=sample(D,sum(mutH),replace = T)
+            where=sample(D,sum(mutH),replace = TRUE)
             H[D*(deadH[mutH]-1)+where]=H[D*(deadH[mutH]-1)+where]+rnorm(sum(mutH),mean=0,sd=effect)
           }else{
             H[,deadH[mutH]]=H[,deadH[mutH]]+rnorm(D*sum(mutH),mean = 0,sd=effect)
@@ -162,7 +162,7 @@ sim.BipartiteEvol=function(nx,ny=nx,NG,dSpace=Inf,D=1,muP,muH,alphaP=0,alphaH=0,
         # for H
         if(sum(mutP)>0){
           if(oneByOne){
-            where=sample(D,sum(mutP),replace = T)
+            where=sample(D,sum(mutP),replace = TRUE)
             P[D*(deadP[mutP]-1)+where]=P[D*(deadP[mutP]-1)+where]+rnorm(sum(mutP),mean=0,sd=effect)
           }else{
             P[,deadP[mutP]]=P[,deadP[mutP]]+rnorm(D*sum(mutP),mean = 0,sd=effect)
@@ -205,7 +205,7 @@ sim.BipartiteEvol=function(nx,ny=nx,NG,dSpace=Inf,D=1,muP,muH,alphaP=0,alphaH=0,
 # out an object created by the simulation function
 # treeP, treeH former genealogy the tree have to be graphted on
 
-make_gen.BipartiteEvol=function(out, treeP=NULL, treeH=NULL, verbose=T){
+make_gen.BipartiteEvol=function(out, treeP=NULL, treeH=NULL, verbose=TRUE){
   
   N=ncol(out$Pmut[[1]])                                                  # number of individuals
   NG=sum(sapply(1:length(out$Pmut),function(i){nrow(out$Pmut[[i]])}))    # total time steps number
@@ -213,7 +213,7 @@ make_gen.BipartiteEvol=function(out, treeP=NULL, treeH=NULL, verbose=T){
   time.step=nrow(out$Pmut)
   
   # auxiliary function creating a genalogy for one type
-  aux=function(P.trait,Gen,X,Mut,ini,thin,tree){
+  aux=function(P.trait,Gen,X,Mut,ini,thin,tree, verbose){
     
     edgeP=matrix(ncol=2)                       # the edges of the genealogy tree
     xP=lapply(1:D,function(i){c()})            # trait values at the beginning of the edges
@@ -360,7 +360,7 @@ make_gen.BipartiteEvol=function(out, treeP=NULL, treeH=NULL, verbose=T){
             # we look for the next change
             newInd=NULL
             if(t>1 & length(currentP)>1){
-              mat=Matrix::which(gen[1:(t-time-1),currentP]>0,arr.ind = T)
+              mat=Matrix::which(gen[1:(t-time-1),currentP]>0,arr.ind = TRUE)
               if(length(mat)==0) {
                 t=time
               }else{
@@ -443,9 +443,9 @@ make_gen.BipartiteEvol=function(out, treeP=NULL, treeH=NULL, verbose=T){
   }
   
   if(verbose) print("P")
-  P=aux(out$P,out$Pgenealogy,out$xP,out$Pmut,out$iniP,out$thin.factor,treeP)
+  P=aux(out$P, out$Pgenealogy, out$xP, out$Pmut, out$iniP, out$thin.factor, treeP, verbose=verbose)
   if(verbose) print("H")
-  H=aux(out$H,out$Hgenealogy,out$xH,out$Hmut,out$iniH,out$thin.factor,treeH)
+  H=aux(out$H, out$Hgenealogy, out$xH, out$Hmut, out$iniH, out$thin.factor, treeH, verbose=verbose)
   return(list(P=P,H=H))
 }
 
@@ -458,14 +458,14 @@ make_gen.BipartiteEvol=function(out, treeP=NULL, treeH=NULL, verbose=T){
 # if NULL it is computed within the function
 
 
-define_species.BipartiteEvol=function(genealogy,threshold=1,distanceH=NULL,distanceP=NULL, verbose=T, monophyly=TRUE, seed=NULL){
+define_species.BipartiteEvol=function(genealogy,threshold=1,distanceH=NULL,distanceP=NULL, verbose=TRUE, monophyly=TRUE, seed=NULL){
   
   if (monophyly==TRUE){
     
     D=length(genealogy$P$x)       # dimension of trait space
     
     # auxiliary function to define the species for one type
-    aux = function(gen,distance){
+    aux = function(gen, distance, verbose=TRUE){
       N=length(gen$tip.label)    # number of individuals
       
       # first we define the genetic types of the individuals
@@ -569,8 +569,8 @@ define_species.BipartiteEvol=function(genealogy,threshold=1,distanceH=NULL,dista
                 }
               }
             }
-          }else{print("error : one node has only one offspring... ???")}
-        }else{print(paste("error : this node should not be in next node :",i))}
+          }else{if (verbose) print("error : one node has only one offspring... ???")}
+        }else{if (verbose) print(paste("error : this node should not be in next node :",i))}
       }   # end of main loop
       
       # rename the species so that there is no gap in the names
@@ -604,28 +604,28 @@ define_species.BipartiteEvol=function(genealogy,threshold=1,distanceH=NULL,dista
       
       tree=prune.with.traits(gen,gen$tip.label[-keep.tip],gen$x)               # suppress the other tips
       tree$abundance=abundance[spec[as.integer(tree$tree$tip.label)]]
-      tree$mean.trait=matrix(mean.trait[,spec[as.integer(tree$tree$tip.label)]], nrow = D, byrow = F)
+      tree$mean.trait=matrix(mean.trait[,spec[as.integer(tree$tree$tip.label)]], nrow = D, byrow = FALSE)
       tree$tree$tip.label=spec[as.integer(tree$tree$tip.label)]
       return(tree)
     }
     
-    P=aux(genealogy$P,distanceP)
-    H=aux(genealogy$H,distanceH)
-    Pphylo=make.phylo(genealogy$P,P)
-    Hphylo=make.phylo(genealogy$H,H)
+    P=aux(genealogy$P, distanceP, verbose=verbose)
+    H=aux(genealogy$H, distanceH, verbose=verbose)
+    Pphylo=make.phylo(genealogy$P, P)
+    Hphylo=make.phylo(genealogy$H, H)
     
   } else {   # Monophyly == False
     
     D=length(genealogy$P$x)       # dimention of trait space
     
     # auxiliary function to define the species for one type
-    aux = function(gen,distance){
+    aux = function(gen,distance, verbose=TRUE){
       N=length(gen$tip.label)    # number of individuals
       
       # first we define the genetic types of the individuals
       
       if(threshold!=1){
-        print("Threshold set to 1 when monophyly==FALSE")
+        if (verbose) print("Threshold set to 1 when monophyly==FALSE")
         threshold <- 1}
       
       
@@ -688,15 +688,15 @@ define_species.BipartiteEvol=function(genealogy,threshold=1,distanceH=NULL,dista
       
       tree=list(tree=pruned_gen) 
       tree$abundance=abundance[tree$tree$tip.label]
-      tree$mean.trait=matrix(mean.trait[,tree$tree$tip.label], nrow = D, byrow = F)
+      tree$mean.trait=matrix(mean.trait[,tree$tree$tip.label], nrow = D, byrow = FALSE)
       # tree$mean.trait and tree$abundance order like tree$tree$tip.label
       return(tree)
     }
     
-    P=aux(genealogy$P,distanceP)
-    H=aux(genealogy$H,distanceH)
-    Pphylo=make.phylo(genealogy$P,P)
-    Hphylo=make.phylo(genealogy$H,H)
+    P=aux(genealogy$P,distanceP, verbose=verbose)
+    H=aux(genealogy$H,distanceH, verbose=verbose)
+    Pphylo=make.phylo(genealogy$P, P)
+    Hphylo=make.phylo(genealogy$H, H)
     
   }
   
@@ -715,7 +715,7 @@ build_network.BipartiteEvol=function(gen, spec){
   nSP=max(P)                                       # number of Pspecies
   nSH=max(H) 
   
-  link=Matrix::Matrix(0,nrow = nSP,ncol = nSH,sparse = T)  # initialize the link matrix
+  link=Matrix::Matrix(0,nrow = nSP,ncol = nSH,sparse = TRUE)  # initialize the link matrix
   
   for(i in 1:N){
       link[P[i],H[i]]=link[P[i],H[i]]+1

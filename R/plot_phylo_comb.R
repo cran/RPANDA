@@ -1,8 +1,12 @@
 plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
                             combi, backbone.option = "crown.shift",
                             main = NULL, col.sub = NULL, col.bck = "black",
-                            lty.bck = 1, tested_nodes = F, lad = T,
-                            leg = T, text.cex = 1, pch.cex = 1, ...){
+                            lty.bck = 1, tested_nodes = FALSE, lad = TRUE,
+                            leg = TRUE, text.cex = 1, pch.cex = 1, ...){
+  
+  # returns old graphical parameter value when exiting the function
+  oldpar <- par(no.readonly = TRUE)
+  on.exit(par(oldpar))
   
   # Checking arguments ####
   # phylo
@@ -48,8 +52,7 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
   }
   
   if(!backbone.option %in% c("stem.shift", "crown.shift")){
-    cat("\nArgument \"backbone.option\" is incorrect.")
-    stop()
+    stop("\nArgument \"backbone.option\" is incorrect.")
   }
   
   # Script ####
@@ -60,12 +63,12 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
   
   phylo1 <- phylo
   
-  if(lad == T){
+  if(lad == TRUE){
     pos_leg <- "bottomleft"
-    phylo1 <- ladderize(phylo1, right = T)
+    phylo1 <- ladderize(phylo1, right = TRUE)
   } else {
     pos_leg <- "topleft"
-    phylo1 <- ladderize(phylo1, F)
+    phylo1 <- ladderize(phylo1, FALSE)
   }
   
   phylo1$node.label <- c(Ntip(phylo1)+1):c(Ntip(phylo1)+Nnode(phylo1))
@@ -100,7 +103,7 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
     
     names_leg <- sampling.fractions[sampling.fractions$nodes %in% comb.sub,]
     names_leg <- names_leg[order(names_leg$data),]
-    comb.sub <- comb.sub[match(names_leg$nodes, comb.sub)]
+    comb.sub2 <- comb.sub[match(names_leg$nodes, comb.sub)]
     names_leg <- names_leg$data
     
     if(is.null(comb.bck)){
@@ -108,7 +111,7 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
     } else{
       names_leg1 <- sampling.fractions[sampling.fractions$nodes %in% comb.bck,]
       names_leg1 <- names_leg1[order(names_leg1$data),]
-      comb.bck <- comb.bck[match(names_leg1$nodes, comb.bck)]
+      comb.bck2 <- comb.bck[match(names_leg1$nodes, comb.bck)]
       names_leg1 <- names_leg1$data
       names_leg1 <- c(paste("Backbone of", names_leg1),"Deep backbone")
       names_leg <- c(names_leg,names_leg1)
@@ -133,10 +136,10 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
     
     lty_clades <- rep(lty.bck, Nedge(phylo1))
     
-    for(i in 1:length(comb.sub)){
-      clade_edges <- Descendants(phylo1, as.numeric(comb.sub[i]), type = "all")
+    for(i in 1:length(comb.sub2)){
+      clade_edges <- Descendants(phylo1, as.numeric(comb.sub2[i]), type = "all")
       if(backbone.option == "stem.shift"){
-        clade_edges <- c(as.numeric(comb.sub[i]),clade_edges)
+        clade_edges <- c(as.numeric(comb.sub2[i]),clade_edges)
       }
       colors_clades[which(phylo1$edge[,2] %in% clade_edges)] <- col.sub[i]
       lty_clades[which(phylo1$edge[,2] %in% clade_edges)] <- 1
@@ -144,10 +147,10 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
     
     clade_edges <- list()
     if(!is.null(comb.bck)){
-      for(j in 1:length(comb.bck)){
-        clade_edges[[j]] <- Descendants(phylo1, as.numeric(comb.bck[j]), type = "all")
+      for(j in 1:length(comb.bck2)){ # ordered comb.bck
+        clade_edges[[j]] <- Descendants(phylo1, as.numeric(comb.bck2[j]), type = "all")
         if(backbone.option == "stem.shift"){
-          clade_edges[[j]] <- c(as.numeric(comb.bck[j]),clade_edges[[j]])
+          clade_edges[[j]] <- c(as.numeric(comb.bck2[j]),clade_edges[[j]])
         }
         if(j>1){
           clade_edges[[j]] <- clade_edges[[j]][!clade_edges[[j]] %in% unlist(clade_edges[1:(j-1)])]
@@ -158,13 +161,16 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
     }
     
     if(!is.null(shift.res)){
-      model_leg <- sapply(shift.res$subclades[comb.sub], function(x) x$Models[1])
+      model_leg <- sapply(shift.res$subclades[comb.sub2], function(x) x$Models[1])
       
-    if(any(grepl("/", shift.res$total$Combination))){
-      model_leg_bck <- unlist(sapply(shift.res$backbones[paste(paste(comb.sub, collapse = "."),paste0(comb.bck, collapse = "."), sep = "/")][[1]], function(x) x$Models[1]))
-    }
-    
-      model_leg <- c(model_leg, model_leg_bck)
+      model_leg_bck <- unlist(sapply(shift.res$backbones[comb][[1]], function(x) x$Models[1]))
+      names(model_leg_bck) <- c(comb.bck, Ntip(phylo)+1)
+      
+      if(!is.null(comb.bck)){
+        model_leg_bck <- model_leg_bck[match(c(comb.bck2, Ntip(phylo)+1) , names(model_leg_bck))]
+      }
+      model_leg <- c(model_leg, model_leg_bck)        
+      
       model_leg <- gsub("_", " ", model_leg)
       model_leg <- paste0(names_leg, " (", model_leg, ")")
     } else {
@@ -187,7 +193,7 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
   plot(phylo1, edge.color = colors_clades,
        edge.lty = lty_clades, main = main, ...)
   
-  if(tested_nodes == T){
+  if(tested_nodes == TRUE){
     pos_leg_n <- c(par("xaxp")[1]-2, c(par("yaxp")[2]+3))
     lastPP <- get("last_plot.phylo", envir = .PlotPhyloEnv)
     node <- (lastPP$Ntip + 1):length(lastPP$xx)
@@ -202,7 +208,7 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
   }
   leg_title <- ""
   if(comb == "whole_tree"){
-    if(leg == T){
+    if(leg == TRUE){
       if(!is.null(shift.res)){
         model_leg <- shift.res$whole_tree$Models[shift.res$whole_tree$AICc == min(shift.res$whole_tree$AICc)]
         legend(pos_leg, legend = paste0("whole_tree (", model_leg, ")"), text.col = "black",cex = text.cex, bty = "n")  
@@ -213,7 +219,7 @@ plot_phylo_comb <- function(phylo, data, sampling.fractions, shift.res = NULL,
       title <- ""
     }
   } else {
-    if(leg == T){
+    if(leg == TRUE){
       if(!is.null(shift.res)){
         leg_title <- "Shifts (Best model)"
       } else {

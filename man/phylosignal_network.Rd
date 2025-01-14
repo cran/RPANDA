@@ -74,7 +74,7 @@ See the tutorial on GitHub (https://github.com/BPerezLamarque/Phylosignal_networ
 
 }
 \references{
-Perez-Lamarque B, Maliet O, Pichon B, Selosse M-A, Martos F, Morlon H. 2022. Do closely related species interact with similar partners? Testing for phylogenetic signal in bipartite interaction networks. bioRxiv, 2021.08.30.458192, ver. 6 peer-reviewed and recommended by Peer Community in Evolutionary Biology. https://doi.org/10.1101/2021.08.30.458192
+Perez-Lamarque B, Maliet O, Pichon B, Selosse M-A, Martos F, Morlon H. 2022. Do closely related species interact with similar partners? Testing for phylogenetic signal in bipartite interaction networks. Peer Community Journal, Volume 2, article no. e59. doi : 10.24072/pcjournal.179. https://peercommunityjournal.org/articles/10.24072/pcjournal.179/
 
 Goslee, S.C. & Urban, D.L. (2007). The ecodist package for dissimilarity-based analysis of ecological data. J. Stat. Softw., 22, 1–19.
 
@@ -100,8 +100,7 @@ network <- mycorrhizal_network[[1]] # interaction matrix
 tree_orchids <- mycorrhizal_network[[2]] # phylogenetic tree (phylo object)
 tree_fungi <- mycorrhizal_network[[3]] # phylogenetic tree (phylo object)
 
-\dontshow{test = FALSE}
-if(test){
+\donttest{
 
 # Using Mantel tests: 
 
@@ -133,7 +132,7 @@ correlation = "Pearson", nperm = 10000) # for guild B
 
 # Alternative using PBLM (not recommended) - very slow 
 
-# phylosignal_network(network, tree_A = tree_orchids, tree_B = tree_fungi, method = "PBLM") 
+phylosignal_network(network, tree_A = tree_orchids, tree_B = tree_fungi, method = "PBLM") 
 
 }
 }

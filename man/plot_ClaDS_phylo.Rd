@@ -8,7 +8,8 @@ Plot a phylogeny with branches colored according to branch-specific rate values
 }
 \usage{
 plot_ClaDS_phylo(phylo, rates, rates2 = NULL, 
-                same.scale = T, main = NULL, lwd = 2, log = T, show.tip.label = F, ...)
+                same.scale = TRUE, main = NULL, lwd = 2, 
+                log = TRUE, show.tip.label = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,6 +23,12 @@ plot_ClaDS_phylo(phylo, rates, rates2 = NULL,
   \item{show.tip.label}{A boolean specifying whether the labels of the phylogeny should be displayed. Default to FALSE.}
   \item{...}{Optional arguments for \code{plot.phylo}.}
 }
+
+\value{
+Plot the phylogeny with branches colored according to branch-specific rate values
+}
+
+
 \references{
 Maliet O., Hartig F. and Morlon H. 2019, A model with many small shifts for estimating species-specific diversificaton rates, \emph{Nature Ecology and Evolution}, doi 10.1038/s41559-019-0908-0
 }
@@ -45,9 +52,11 @@ tree = obj$tree
 speciation_rates = obj$lamb[obj$rates]
 extinction_rates = obj$mu[obj$rates]
 
+oldpar <- par(no.readonly = TRUE)
 par(mar=c(1,1,0,0))
 plot_ClaDS_phylo(tree,speciation_rates)
 
 plot_ClaDS_phylo(tree,speciation_rates, lwd = 4, log = FALSE)
+par(oldpar) # restore the old par
 
 }

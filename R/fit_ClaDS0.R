@@ -26,8 +26,6 @@ create_model=function(start_val,posterior,proposalKernel,tuning=1,pamhType="Univ
       new = rnorm(1,meanMcmc[indice],sqrt(varMcmc[indice]))
       par=param[indice]
       hastings = ((((new-meanMcmc[indice])^2)/varMcmc[indice])-(((par-meanMcmc[indice])^2)/varMcmc[indice]))/2
-      #   hastings = dnorm(par,meanMcmc[indice],sqrt(varMcmc[indice]),log=T)-dnorm(new,meanMcmc[indice],sqrt(varMcmc[indice]),log=T)
-      #   print(paste(hastings,hastings1,sep=" ; "))
       param[indice]=new
       returnProp <- list(
         proposal=param,
@@ -66,7 +64,7 @@ create_model=function(start_val,posterior,proposalKernel,tuning=1,pamhType="Univ
 }
 
 autoMetropolisGibbs <-
-  function(model, startvalue, iterations, consoleupdates=1000, thin=100, autoOptimize=TRUE, filename,...){
+  function(model, startvalue, iterations, consoleupdates=1000, thin=100, autoOptimize=TRUE, filename, verbose=FALSE, ...){
     
     proposalKernel = model$proposalKernel
     if(missing(startvalue)){
@@ -85,7 +83,8 @@ autoMetropolisGibbs <-
     mcmc_acceptance <- NULL
     
     if(missing(filename)){
-      filename <- paste("mcmc.log.txt")
+      tmp <- tempdir()
+      filename <- paste(tmp, "/mcmc.log.txt", sep="")
     }
     
     ## --- Indices for auto-optimization
@@ -253,13 +252,13 @@ autoMetropolisGibbs <-
     
     chain <- read.table(filename, sep="\t", header=TRUE, row.names=1)
     # To speed up the computations
-    # chain <- fread(filename, sep="\t", header=T, skip=1)
+    # chain <- fread(filename, sep="\t", header=TRUE, skip=1)
     
     results <- list(chain=mcmc(chain), finetune=tuning, acceptance=mcmc_acceptance)
     return(results)
   }
 
-createLikelihood_ClaDS0 <- function(phylo, root_depth=0, relative=T){
+createLikelihood_ClaDS0 <- function(phylo, root_depth=0, relative=TRUE){
   
   nbtips = Ntip(phylo)
   edge = phylo$edge
@@ -429,13 +428,18 @@ get_ancestors <- function(phylo){
 #### the fit_ClaDS0 function ####
 
 
-fit_ClaDS0=function(tree,name,pamhLocalName = "pamhLocal",
+fit_ClaDS0=function(tree,name,pamhLocalName = NULL,
                        iteration=10000000, thin=20000,update=1000, adaptation=10,
-                       seed=NULL, nCPU=3){
+                       seed=NULL, nCPU=3, verbose=TRUE){
   if (! nCPU %in% c(1,3)){
     warning("nCPU should either be 1 or 3. nCPU is set to 1.")
     nCPU = 1
   }
+  # if no path/names are givn, we save the results into the tempdir()
+  if(is.null(pamhLocalName)){
+    tmp <- tempdir()
+    pamhLocalName = paste(tmp, "/pamhLocal", sep="")
+    }
   proposalKernel="bactrian"
   if(! is.null(seed)) set.seed(seed)
   pamhType="None"
@@ -468,26 +472,26 @@ fit_ClaDS0=function(tree,name,pamhLocalName = "pamhLocal",
   ptm <- proc.time()
   sampler=mclapply(1:3,function(j){ autoMetropolisGibbs(model, iterations=iteration, consoleupdates=1000000, 
                                                                     thin=thin, autoOptimize=TRUE, filename=paste(pamhLocalName,j,sep=""),
-                                                                    update=update, adaptation=adaptation * update, verbose=F)},mc.cores = nCPU)
+                                                                    update=update, adaptation=adaptation * update, verbose=FALSE)},mc.cores = nCPU)
   
   rep=mcmc.list(lapply(1:3,function(j){mcmc(sampler[[j]]$chain[-(1:10),-c((npar+1):(npar+3))])}))
   gelman=try(gelman.diag(rep))
   if(! inherits(gelman,"try-error")) {gelman=max(gelman$psrf[,2])} else {gelman=10}
-  print(paste0("Current gelman statistics = ",gelman))
+  if (verbose) print(paste0("Current gelman statistics = ",gelman))
   
   while(gelman>1.05){
     sampler2=mclapply(1:3,function(j){
       modelI=model
       modelI$tuning=sampler[[j]]$finetune
       modelI$start_val=sampler[[j]]$chain[nrow(sampler[[j]]$chain),1:npar]
-      autoMetropolisGibbs(modelI, iterations=iteration, consoleupdates=1000000, thin=thin, autoOptimize=F, 
+      autoMetropolisGibbs(modelI, iterations=iteration, consoleupdates=1000000, thin=thin, autoOptimize=FALSE, 
                           filename=paste(pamhLocalName,j,sep=""), 
-                          update=1000,adaptation=10000,verbose=F)},mc.cores = nCPU)
+                          update=1000,adaptation=10000,verbose=FALSE)},mc.cores = nCPU)
     for(j in 1:3){sampler[[j]]$chain=mcmc(rbind(sampler[[j]]$chain,sampler2[[j]]$chain[-1,]))}
     rep=mcmc.list(lapply(1:3,function(j){mcmc(sampler[[j]]$chain[-(1:10),-c((npar+1):(npar+3))])}))
     gelman=try(gelman.diag(rep))
     if(! inherits(gelman,"try-error")) {gelman=max(gelman$psrf[,2])} else {gelman=10}
-    print(paste0("Current gelman statistics = ",gelman))
+    if (verbose) print(paste0("Current gelman statistics = ",gelman))
   }
   
   colnames=c("sigma","alpha","l_0",paste0("lambda_",1:nrow(tree$edge)))

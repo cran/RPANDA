@@ -1,7 +1,7 @@
 div.models <- function(phylo, tot_time, f,
-                       backbone = F, spec_times = NULL, branch_times = NULL,
+                       backbone = FALSE, spec_times = NULL, branch_times = NULL,
                        models = c("BCST", "BCST_DCST", "BVAR", "BVAR_DCST", "BCST_DVAR", "BVAR_DVAR"),
-                       cond, verbose = T, n.max = NULL, rate.max = NULL){
+                       cond, verbose = TRUE, n.max = NULL, rate.max = NULL){
   
   results <- as.data.frame(matrix(NA,length(models),8))
   colnames(results)<-c("Models","Parameters","logL","AICc","Lambda","Alpha","Mu","Beta")
@@ -24,31 +24,31 @@ div.models <- function(phylo, tot_time, f,
     while(class(test) == "try-error"){
       
       if(is.null(n.max) & is.null(rate.max)){
-        name <- models[res_l]
+        name <- "BCST"
         suppressWarnings(test <- try(
           treei_BCST <- fit_bd_backbone(phylo, tot_time, f=f,
                                         backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                         f.lamb = function(x,y){y}, f.mu = function(x,y){0},
                                         lamb_par = list_param[[p]][1], mu_par = NULL,
-                                        cst.lamb=T, cst.mu=T, expo.lamb=F, expo.mu=F, fix.mu=T, cond=cond, model = models[res_l]),
-          silent = T
+                                        cst.lamb=TRUE, cst.mu=TRUE, expo.lamb=FALSE, expo.mu=FALSE, fix.mu=TRUE, cond=cond, model = models[res_l]),
+          silent = TRUE
         ))
       } else{
-        name <- paste0(models[res_l],"c")
+        name <- "BCSTc"
         suppressWarnings(test <- try(
           treei_BCST <- fit_bd_backbone_c(phylo, tot_time, f=f,
                                           backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                           f.lamb = function(x,y){y}, f.mu = function(x,y){0},
                                           lamb_par = list_param[[p]][1], mu_par = NULL,
-                                          cst.lamb=T, cst.mu=T, expo.lamb=F, expo.mu=F, fix.mu=T, cond=cond, model = models[res_l],
+                                          cst.lamb=TRUE, cst.mu=TRUE, expo.lamb=FALSE, expo.mu=FALSE, fix.mu=TRUE, cond=cond, model = models[res_l],
                                           n.max = n.max, rate.max = rate.max),
-          silent = T
+          silent = TRUE
         ))
       }
       p = p + 1
     }    
     
-    if(verbose == T){cat("   ", name, " \t \t AICc =", treei_BCST$aicc,"\n")}
+    if(verbose == TRUE){message("   ", name, " \t \t AICc = ", treei_BCST$aicc,"\n")}
     results[res_l, colnames(results) %in% c("Models","Parameters","logL","AICc","Lambda")] <- c(name, 1, c(treei_BCST$LH,treei_BCST$aicc, treei_BCST$lamb_par))
     res_l <- res_l + 1
     
@@ -64,30 +64,30 @@ div.models <- function(phylo, tot_time, f,
     class(test) <- "try-error"
     while(class(test) == "try-error"){
       if(is.null(n.max) & is.null(rate.max)){
-        name <- models[res_l]
+        name <- "BCST_DCST"
         test <- tryCatch(
           treei_BCST_DCST <- fit_bd_backbone(phylo, tot_time, f=f,
                                              backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                              f.lamb = function(x,y){y}, f.mu = function(x,y){y},
                                              lamb_par = list_param[[p]][1], mu_par = list_param[[p]][3],
-                                             cst.lamb=T, cst.mu=T, expo.lamb=F, expo.mu=F, fix.mu=F, cond=cond, model = models[res_l])
+                                             cst.lamb=TRUE, cst.mu=TRUE, expo.lamb=FALSE, expo.mu=FALSE, fix.mu=FALSE, cond=cond, model = models[res_l])
         )
       } else {
-        name <- paste0(models[res_l],"c")
+        name <- "BCST_DCSTc"
         test <- try(
           treei_BCST_DCST <- fit_bd_backbone_c(phylo, tot_time, f=f,
                                                backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                                f.lamb = function(x,y){y}, f.mu = function(x,y){y},
                                                lamb_par = list_param[[p]][1], mu_par = list_param[[p]][3],
-                                               cst.lamb=T, cst.mu=T, expo.lamb=F, expo.mu=F, fix.mu=F, cond=cond, model = models[res_l],
+                                               cst.lamb=TRUE, cst.mu=TRUE, expo.lamb=FALSE, expo.mu=FALSE, fix.mu=FALSE, cond=cond, model = models[res_l],
                                                n.max = n.max, rate.max = rate.max),
-          silent = T
+          silent = TRUE
         )
       }
       p = p + 1
     }
     
-    if(verbose == T){cat("   ", name, "\t \t AICc =", treei_BCST_DCST$aicc,"\n")}
+    if(verbose == TRUE){message("   ", name, "\t \t AICc = ", treei_BCST_DCST$aicc,"\n")}
     results[res_l, colnames(results) %in% c("Models","Parameters","logL","AICc","Lambda", "Mu")] <- c(name, 2, c(treei_BCST_DCST$LH, treei_BCST_DCST$aicc, treei_BCST_DCST$lamb_par, treei_BCST_DCST$mu_par))
     res_l <- res_l + 1
     
@@ -99,27 +99,27 @@ div.models <- function(phylo, tot_time, f,
     class(test) <- "try-error"
     while(class(test) == "try-error"){
       if(is.null(n.max) & is.null(rate.max)){
-        name <- models[res_l]
+        name <- "BVAR"
         test <- try(
           treei_BVAR <- fit_bd_backbone(phylo, tot_time, f=f,
                                         backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                         f.lamb = function(x,y){y[1]*exp(y[2]*x)}, f.mu = function(x,y){0},
                                         lamb_par = list_param[[p]][c(1,2)], mu_par = NULL,
-                                        cst.lamb=F, cst.mu=T, expo.lamb=T, expo.mu=F, fix.mu=T, cond=cond, model = models[res_l]),
-          silent = T
+                                        cst.lamb=FALSE, cst.mu=TRUE, expo.lamb=TRUE, expo.mu=FALSE, fix.mu=TRUE, cond=cond, model = models[res_l]),
+          silent = TRUE
         )
         
         
       } else {
-        name <- paste0(models[res_l],"c")
+        name <- "BVARc"
         test <- try(
           treei_BVAR <- fit_bd_backbone_c(phylo, tot_time, f=f,
                                           backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                           f.lamb = function(x,y){y[1]*exp(y[2]*x)}, f.mu = function(x,y){0},
                                           lamb_par = list_param[[p]][c(1,2)], mu_par = NULL,
-                                          cst.lamb=F, cst.mu=T, expo.lamb=T, expo.mu=F, fix.mu=T, cond=cond, model = models[res_l],
+                                          cst.lamb=FALSE, cst.mu=TRUE, expo.lamb=TRUE, expo.mu=FALSE, fix.mu=TRUE, cond=cond, model = models[res_l],
                                           n.max = n.max, rate.max = rate.max),
-          silent = T
+          silent = TRUE
         )
       }
       
@@ -127,7 +127,7 @@ div.models <- function(phylo, tot_time, f,
     }
     
     
-    if(verbose == T){cat("   ",name," \t \t AICc =", treei_BVAR$aicc,"\n")}
+    if(verbose == TRUE){message("   ",name," \t \t AICc = ", treei_BVAR$aicc,"\n")}
     results[res_l, colnames(results) %in% c("Models","Parameters","logL","AICc","Lambda", "Alpha")] <- c(name, 2, c(treei_BVAR$LH, treei_BVAR$aicc, treei_BVAR$lamb_par))
     res_l <- res_l + 1
     list_param[["improved"]][c(1,2)] <- treei_BVAR$lamb_par
@@ -139,32 +139,32 @@ div.models <- function(phylo, tot_time, f,
     class(test) <- "try-error"
     while(class(test) == "try-error"){
       if(is.null(n.max) & is.null(rate.max)){
-        name <- models[res_l]
+        name <- "BVAR_DCST"
         test <- try(
           treei_BVAR_DCST <- fit_bd_backbone(phylo, tot_time, f=f,
                                              backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                              f.lamb = function(x,y){y[1]*exp(y[2]*x)}, f.mu = function(x,y){y},
                                              lamb_par = list_param[[p]][c(1,2)], mu_par = list_param[[p]][3],
-                                             cst.lamb=F, cst.mu=T, expo.lamb=T, expo.mu=F,fix.mu=F,cond=cond, model = models[res_l]),
-          silent = T
+                                             cst.lamb=FALSE, cst.mu=TRUE, expo.lamb=TRUE, expo.mu=FALSE,fix.mu=FALSE,cond=cond, model = models[res_l]),
+          silent = TRUE
         )
       } else {
-        name <- paste0(models[res_l],"c")
+        name <- "BVAR_DCSTc"
         test <- try(
           treei_BVAR_DCST <- fit_bd_backbone_c(phylo, tot_time, f=f,
                                                backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                                f.lamb = function(x,y){y[1]*exp(y[2]*x)}, f.mu = function(x,y){y},
                                                lamb_par = list_param[[p]][c(1,2)], mu_par = list_param[[p]][3],
-                                               cst.lamb=F, cst.mu=T, expo.lamb=T, expo.mu=F,fix.mu=F,cond=cond, model = models[res_l],
+                                               cst.lamb=FALSE, cst.mu=TRUE, expo.lamb=TRUE, expo.mu=FALSE,fix.mu=FALSE,cond=cond, model = models[res_l],
                                                n.max = n.max, rate.max = rate.max),
-          silent = T
+          silent = TRUE
         )
       }
       
       p = p + 1
     }
     
-    if(verbose == T){cat("   ",name,"\t \t AICc =", treei_BVAR_DCST$aicc,"\n")}
+    if(verbose == TRUE){message("   ",name,"\t \t AICc = ", treei_BVAR_DCST$aicc,"\n")}
     results[res_l, colnames(results) %in% c("Models","Parameters","logL","AICc","Lambda", "Alpha", "Mu")] <- c(name, 3, c(treei_BVAR_DCST$LH, treei_BVAR_DCST$aicc, treei_BVAR_DCST$lamb_par, treei_BVAR_DCST$mu_par))
     res_l <- res_l + 1
   }
@@ -176,32 +176,32 @@ div.models <- function(phylo, tot_time, f,
     while(class(test) == "try-error"){
       
       if(is.null(n.max) & is.null(rate.max)){
-        name <- models[res_l]
+        name <- "BCST_DVAR"
         test <- try(
           treei_BCST_DVAR <- fit_bd_backbone(phylo, tot_time, f=f,
                                              backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                              f.lamb = function(x,y){y}, f.mu = function(x,y){y[1]*exp(y[2]*x)},
                                              lamb_par = list_param[[p]][c(1)], mu_par = list_param[[p]][c(3,4)],
-                                             cst.lamb = T, cst.mu=F, expo.lamb=F, expo.mu=T, fix.mu=F, cond=cond, model = models[res_l]),
-          silent = T
+                                             cst.lamb = TRUE, cst.mu=FALSE, expo.lamb=FALSE, expo.mu=TRUE, fix.mu=FALSE, cond=cond, model = models[res_l]),
+          silent = TRUE
         )
       } else {
-        name <- paste0(models[res_l],"c")
+        name <- "BCST_DVARc"
         test <- try(
           treei_BCST_DVAR <- fit_bd_backbone_c(phylo, tot_time, f=f,
                                                backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                                f.lamb = function(x,y){y}, f.mu = function(x,y){y[1]*exp(y[2]*x)},
                                                lamb_par = list_param[[p]][c(1)], mu_par = list_param[[p]][c(3,4)],
-                                               cst.lamb = T, cst.mu=F, expo.lamb=F, expo.mu=T, fix.mu=F, cond=cond, model = models[res_l],
+                                               cst.lamb = TRUE, cst.mu=FALSE, expo.lamb=FALSE, expo.mu=TRUE, fix.mu=FALSE, cond=cond, model = models[res_l],
                                                n.max = n.max, rate.max = rate.max),
-          silent = T
+          silent = TRUE
         )
       }
       
       p = p + 1
     }
     
-    if(verbose == T){cat("   ",name,"\t \t AICc =", treei_BCST_DVAR$aicc,"\n")}
+    if(verbose == TRUE){message("   ",name,"\t \t AICc = ", treei_BCST_DVAR$aicc,"\n")}
     results[res_l, colnames(results) %in% c("Models","Parameters","logL","AICc","Lambda", "Mu", "Beta")] <- c(name, 3, c(treei_BCST_DVAR$LH, treei_BCST_DVAR$aicc, treei_BCST_DVAR$lamb_par, treei_BCST_DVAR$mu_par))
     res_l <- res_l + 1
   }
@@ -212,31 +212,31 @@ div.models <- function(phylo, tot_time, f,
     class(test) <- "try-error"
     while(class(test) == "try-error"){
       if(is.null(n.max) & is.null(rate.max)){
-        name <- models[res_l]
+        name <- "BVAR_DVAR"
         test <- try(
           treei_BVAR_DVAR <- fit_bd_backbone(phylo, tot_time, f=f,
                                              backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                              f.lamb = function(x,y){y[1]*exp(y[2]*x)}, f.mu = function(x,y){y[1]*exp(y[2]*x)},
                                              lamb_par = list_param[[p]][c(1,2)], mu_par = list_param[[p]][c(3,4)],
-                                             cst.lamb=F, cst.mu=F, expo.lamb=T, expo.mu=T, fix.mu=F, cond=cond, model = models[res_l]),
-          silent = T
+                                             cst.lamb=FALSE, cst.mu=FALSE, expo.lamb=TRUE, expo.mu=TRUE, fix.mu=FALSE, cond=cond, model = models[res_l]),
+          silent = TRUE
         )
       } else {
-        name <- paste0(models[res_l],"c")
+        name <- "BVAR_DVARc"
         test <- try(
           treei_BVAR_DVAR <- fit_bd_backbone_c(phylo, tot_time, f=f,
                                                backbone = backbone, spec_times = spec_times, branch_times = branch_times,
                                                f.lamb = function(x,y){y[1]*exp(y[2]*x)}, f.mu = function(x,y){y[1]*exp(y[2]*x)},
                                                lamb_par = list_param[[p]][c(1,2)], mu_par = list_param[[p]][c(3,4)],
-                                               cst.lamb=F, cst.mu=F, expo.lamb=T, expo.mu=T, fix.mu=F, cond=cond, model = models[res_l],
+                                               cst.lamb=FALSE, cst.mu=FALSE, expo.lamb=TRUE, expo.mu=TRUE, fix.mu=FALSE, cond=cond, model = models[res_l],
                                                n.max = n.max, rate.max = rate.max),
-          silent = T
+          silent = TRUE
         )
       }
       p = p + 1
     }
     
-    if(verbose == T){cat("   ",name,"\t \t AICc =", treei_BVAR_DVAR$aicc,"\n")}
+    if(verbose == TRUE){message("   ",name,"\t \t AICc = ", treei_BVAR_DVAR$aicc,"\n")}
     results[res_l, colnames(results) %in% c("Models","Parameters","logL","AICc","Lambda", "Alpha", "Mu", "Beta")] <- c(name, 4, c(treei_BVAR_DVAR$LH, treei_BVAR_DVAR$aicc, treei_BVAR_DVAR$lamb_par, treei_BVAR_DVAR$mu_par))
     res_l <- res_l + 1
   }

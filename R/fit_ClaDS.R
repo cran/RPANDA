@@ -11,9 +11,9 @@ norm2=function(x){
 
 proposalGeneratorFactoryDE_gibbs <- function(proba.gibbs,p=0.01,var=1e-6,burn=0,
                                              n.thin=0,decreasing.var=0,
-                                             alpha=log(0.1)/200,N.sigma=0,allHyp=F){
+                                             alpha=log(0.1)/200,N.sigma=0,allHyp=FALSE){
   
-  returnProposal <- function(chains,x,n,snook=F){
+  returnProposal <- function(chains,x,n,snook=FALSE){
     N=n*(burn)
     npar=ncol(chains[[1]])-2
     if(length(var)==1){
@@ -68,7 +68,6 @@ proposalGeneratorFactoryDE_gibbs <- function(proba.gibbs,p=0.01,var=1e-6,burn=0,
       
       
       rep=x
-      # print(x)
       rep=rep+(gamma*snook)
       if(n<N.sigma){rep[1]=x[1]}
       
@@ -116,7 +115,6 @@ proposalGeneratorFactoryDE_gibbs <- function(proba.gibbs,p=0.01,var=1e-6,burn=0,
       
       
       rep=x
-      # print(x)
       rep[gibbs]=rep[gibbs]+e+(gamma*(chains[[ind1.1]][ind1.2,1:npar]-chains[[ind2.1]][ind2.2,1:npar]))[gibbs]
       if(n<N.sigma){rep[1]=x[1]}
       
@@ -212,7 +210,7 @@ prepare_ClaDS=function(tree,sample_fraction, Nchain=3,model_id="ClaDS2", res_Cla
     param2[1]=exp(param2[1])
     param2[2]=exp(param2[2])
     param2[-(1:4)]=param2[4]+param[-(1:4)]+ae*param[2]
-    if(param2[1]<2){t=try(likelihood(param2,sample_fraction,former),silent = T)
+    if(param2[1]<2){t=try(likelihood(param2,sample_fraction,former),silent = TRUE)
     if(inherits(t,"try-error")){
       return(list(LP=-Inf))
       
@@ -251,7 +249,7 @@ prepare_ClaDS=function(tree,sample_fraction, Nchain=3,model_id="ClaDS2", res_Cla
   return(sampler)
 }
 
-add_iter_ClaDS <- function(mcmcSampler, iterations, thin=NULL,nCPU=1){
+add_iter_ClaDS <- function(mcmcSampler, iterations, thin=NULL,nCPU=1, verbose=TRUE){
   snookProb=0.05
   colnames=c("sigma","alpha","mu","l_0")
   post=mcmcSampler$post
@@ -284,8 +282,8 @@ add_iter_ClaDS <- function(mcmcSampler, iterations, thin=NULL,nCPU=1){
       for (l in 1:mcmcSampler$thin){
         u=runif(1,0,1)
         if(u < snookProb){
-          proposal = try(mcmcSampler$proposalGenerator$returnProposal(mcmcSampler$chains,current[1:mcmcSampler$numPars],k,snook=T))
-          proposalEval <- try(post(proposal$prop,form, ae = mcmcSampler$alpha_effect),silent = T)
+          proposal = try(mcmcSampler$proposalGenerator$returnProposal(mcmcSampler$chains,current[1:mcmcSampler$numPars],k,snook=TRUE))
+          proposalEval <- try(post(proposal$prop,form, ae = mcmcSampler$alpha_effect),silent = TRUE)
           if(!is.null(proposal) & !inherits(proposal,"try-error") & !inherits(proposalEval,"try-error") & inherits(proposalEval,"list")){
             if(!is.nan(proposalEval$LP) & proposalEval$LP<Inf & proposalEval$LP>-Inf){
               probab = exp(proposalEval$LP + ((mcmcSampler$numPars-1)/2)*(log(norm2(proposal$prop-proposal$z))-
@@ -297,8 +295,8 @@ add_iter_ClaDS <- function(mcmcSampler, iterations, thin=NULL,nCPU=1){
                 form=proposalEval
               }}}
         }else{
-          proposal = try(mcmcSampler$proposalGenerator$returnProposal(mcmcSampler$chains,current[1:mcmcSampler$numPars],k,snook=F))
-          proposalEval <- try(post(proposal,form),silent = T)
+          proposal = try(mcmcSampler$proposalGenerator$returnProposal(mcmcSampler$chains,current[1:mcmcSampler$numPars],k,snook=FALSE))
+          proposalEval <- try(post(proposal,form),silent = TRUE)
           if(!is.null(proposal) & !inherits(proposal,"try-error") & !inherits(proposalEval,"try-error") & inherits(proposalEval,"list")){
             if(!is.nan(proposalEval$LP) & proposalEval$LP<Inf & proposalEval$LP>-Inf){
               probab = exp(proposalEval$LP - current[mcmcSampler$numPars+2])
@@ -320,7 +318,7 @@ add_iter_ClaDS <- function(mcmcSampler, iterations, thin=NULL,nCPU=1){
       k=k+1
       i=i+1
     }
-    if( i %% mcmcSampler$consoleupdates == 0 ) cat("\r","MCMC in progress",(i-2)*mcmcSampler$thin,"of",iterations+mcmcSampler$thin*(lastvalue-1),"please wait!","\r")}
+    if( i %% mcmcSampler$consoleupdates == 0 ) if (verbose) cat("\r","MCMC in progress",(i-2)*mcmcSampler$thin,"of",iterations+mcmcSampler$thin*(lastvalue-1),"please wait!","\r")}
   
   message("Done.")
   for(i in 1:mcmcSampler$Nchain){
@@ -513,7 +511,7 @@ MagnusExpansion_ClaDS1=function(phi,ini,tini,tend,step,conv=1e-10,mask_val=-20,t
 }
 
 Khi_ClaDS1=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=phi$M,mu=phi$mu,
-                    timePhi=phi$fun[,1],nt=1000,method="Higham08.b",banded=0,sparse=F,interval=2,conv=1e-10){
+                    timePhi=phi$fun[,1],nt=1000,method="Higham08.b",banded=0,sparse=FALSE,interval=2,conv=1e-10){
   
   if((0.99*t)>phi$fun[nrow(phi$fun),1]) return(rep(1e-300,length(phi$expLambda)))
   if( !(func %in% c("Khi","Psi","Ksi","Zeta"))){stop("the function is not known")}
@@ -523,7 +521,6 @@ Khi_ClaDS1=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=
   tend=which.min(abs(timePhi-t))
   nlambda=length(lambdas)
   expLambda=phi$expLambda
-  # print(c(tini,tend))
   
   if(func=="Khi" | func=="Psi"){
     
@@ -547,16 +544,16 @@ Khi_ClaDS1=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=
     
   }else{
     inter=min(interval,(t-s)/(phi$fun[2,1]-phi$fun[1,1]))
-    do=T
+    do=TRUE
     while(do){
-      done=T
+      done=TRUE
       rep = try(MagnusExpansion_ClaDS1(phi,ini,tini,tend,inter,conv=conv,timeIni=s,timeEnd=t))
       do=inherits(rep,"try-error")
       # if(! do) do=(min(rep)<0)
       if(! do & func=="Khi"){ do=(max(rep)>1)}else{do=(max(rep)>(max(1+exp(expLambda*(s-t)))*max(ini)))}# | any(rep<0))}
       inter=(inter/2)
       if(do){
-        done=F
+        done=FALSE
         do=(inter>1e-1)
       }
     }
@@ -579,7 +576,7 @@ Khi_ClaDS1=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=
 }
 
 
-createLikelihood_ClaDS1 <- function(phylo, root_depth=0, relative = F,nt=1000,nlambda=100,
+createLikelihood_ClaDS1 <- function(phylo, root_depth=0, relative = FALSE,nt=1000,nlambda=100,
                                     mlambda=1e-25,Mlambda=1e10,conv=1e-10){
   method="FFT"
   interval=nt
@@ -675,7 +672,7 @@ createLikelihood_ClaDS1 <- function(phylo, root_depth=0, relative = F,nt=1000,nl
       if(root_depth==0){
         ind1=which.min(abs(lambda2[roots[1]+1]-phi$lambda))
         ind2=which.min(abs(lambda2[roots[2]+1]-phi$lambda))
-        PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=T))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
+        PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=TRUE))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
       }else{
         m=Khi_ClaDS1(phi,root_depth+nodeprof[nbtips+1],nodeprof[nbtips+1],lambda1 = lambda2[roots[1]+1],
                      lambda2 = lambda2[roots[2]+1],func = "Zeta",nt=nt,interval=interval,conv=conv)
@@ -686,7 +683,6 @@ createLikelihood_ClaDS1 <- function(phylo, root_depth=0, relative = F,nt=1000,nl
       change=which(abs(lambda2-former$lambda)>0)-1
       change=unique(c(change,sapply(change, function(x){if(x>0){parents[x]}else{-1}})))
       change=change[change>(-1)]
-      # print(length(change))
       PsiKhi=former$PsiKhi
       phi=former$phi
       for( i in change){
@@ -694,7 +690,7 @@ createLikelihood_ClaDS1 <- function(phylo, root_depth=0, relative = F,nt=1000,nl
           if(root_depth==0){
             ind1=which.min(abs(lambda2[roots[1]+1]-phi$lambda))
             ind2=which.min(abs(lambda2[roots[2]+1]-phi$lambda))
-            PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=T))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
+            PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=TRUE))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
           }else{
             m=Khi_ClaDS1(phi,root_depth+nodeprof[nbtips+1],nodeprof[nbtips+1],lambda1 = lambda2[roots[1]+1],
                          lambda2 = lambda2[roots[2]+1],func = "Zeta",nt=nt,method=method,interval=interval,conv=conv)
@@ -863,7 +859,7 @@ MagnusExpansion_ClaDS2=function(phi,ini,tini,tend,step,conv=1e-10,mask_val=-20,t
 }
 
 Khi_ClaDS2=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=phi$M,mu=phi$mu,
-                    timePhi=phi$fun[,1],nt=1000,method="Higham08.b",sparse=F,interval=2,conv=1e-10){
+                    timePhi=phi$fun[,1],nt=1000,method="Higham08.b",sparse=FALSE,interval=2,conv=1e-10){
   
   if((0.99*t)>phi$fun[nrow(phi$fun),1]) return(rep(1e-300,length(phi$expLambda)))
   if( !(func %in% c("Khi","Psi","Ksi","Zeta"))){stop("the function is not known")}
@@ -873,7 +869,6 @@ Khi_ClaDS2=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=
   tend=which.min(abs(timePhi-t))
   nlambda=length(lambdas)
   expLambda=phi$expLambda
-  # print(c(tini,tend))
   
   if(func=="Khi" | func=="Psi"){
     
@@ -897,16 +892,16 @@ Khi_ClaDS2=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=
     
   }else{
     inter=min(interval,(t-s)/(phi$fun[2,1]-phi$fun[1,1]))
-    do=T
+    do=TRUE
     while(do){
-      done=T
+      done=TRUE
       rep = try(MagnusExpansion_ClaDS2(phi,ini,tini,tend,inter,conv=conv,timeIni=s,timeEnd=t))
       do=inherits(rep,"try-error")
       # if(! do) do=(min(rep)<0)
       if(! do & func=="Khi"){ do=(max(rep)>1)}else{do=(max(rep)>(max(1+exp(expLambda*(s-t)))*max(ini)))}# | any(rep<0))}
       inter=(inter/2)
       if(do){
-        done=F
+        done=FALSE
         do=(inter>1e-1)
       }
     }
@@ -929,7 +924,7 @@ Khi_ClaDS2=function(phi,s,t,func="Khi",lambda1=0,lambda2=0,lambdas=phi$lambda,M=
 }
 
 
-createLikelihood_ClaDS2 <- function(phylo, root_depth=0, relative = F,nt=1000,nlambda=100,
+createLikelihood_ClaDS2 <- function(phylo, root_depth=0, relative = FALSE,nt=1000,nlambda=100,
                                     mlambda=1e-25,Mlambda=1e10,conv=1e-10){
   method="FFT"
   nbtips = Ntip(phylo)
@@ -1026,7 +1021,7 @@ createLikelihood_ClaDS2 <- function(phylo, root_depth=0, relative = F,nt=1000,nl
       if(root_depth==0){
         ind1=which.min(abs(lambda2[roots[1]+1]-phi$lambda))
         ind2=which.min(abs(lambda2[roots[2]+1]-phi$lambda))
-        PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=T))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
+        PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=TRUE))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
       }else{
         m=Khi_ClaDS2(phi,root_depth+nodeprof[nbtips+1],nodeprof[nbtips+1],lambda1 = lambda2[roots[1]+1],
                      lambda2 = lambda2[roots[2]+1],func = "Zeta",nt=nt,interval=interval,conv=conv)
@@ -1037,7 +1032,6 @@ createLikelihood_ClaDS2 <- function(phylo, root_depth=0, relative = F,nt=1000,nl
       change=which(abs(lambda2-former$lambda)>0)-1
       change=unique(c(change,sapply(change, function(x){if(x>0){parents[x]}else{-1}})))
       change=change[change>(-1)]
-      # print(length(change))
       PsiKhi=former$PsiKhi
       phi=former$phi
       for( i in change){
@@ -1045,7 +1039,7 @@ createLikelihood_ClaDS2 <- function(phylo, root_depth=0, relative = F,nt=1000,nl
           if(root_depth==0){
             ind1=which.min(abs(lambda2[roots[1]+1]-phi$lambda))
             ind2=which.min(abs(lambda2[roots[2]+1]-phi$lambda))
-            PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=T))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
+            PsiKhi[1]=sum(dnorm(lambda2[roots+1],mean=lambda2[1],sd=sigma,log=TRUE))-log(max(1-phi$fun[nrow(phi$fun),ind1+1],1e-3))-log(max(1-phi$fun[nrow(phi$fun),ind2+1],1e-3))
           }else{
             m=Khi_ClaDS2(phi,root_depth+nodeprof[nbtips+1],nodeprof[nbtips+1],lambda1 = lambda2[roots[1]+1],
                          lambda2 = lambda2[roots[2]+1],func = "Zeta",nt=nt,method=method,interval=interval,conv=conv)
@@ -1081,7 +1075,7 @@ createLikelihood_ClaDS2 <- function(phylo, root_depth=0, relative = F,nt=1000,nl
 #### the fit_ClaDS function ####
 
 fit_ClaDS = function(tree,sample_fraction,iterations, thin = 50, file_name = NULL, it_save = 1000,
-                     model_id="ClaDS2", nCPU = 1, mcmcSampler = NULL, ...){
+                     model_id="ClaDS2", nCPU = 1, mcmcSampler = NULL, verbose=TRUE, ...){
   args = list(...)
   
   if (is.null(args$Nchain)) args$Nchain=3
@@ -1108,13 +1102,12 @@ fit_ClaDS = function(tree,sample_fraction,iterations, thin = 50, file_name = NUL
         mcmcSampler = mcmcSampler,     
         iterations = it_save,            
         thin = thin,  
-        nCPU = nCPU)   
+        nCPU = nCPU,
+        verbose=verbose)   
       
       if (! is.null(file_name)){
-        save(mcmcSampler, file = file_name)
+        saveRDS(mcmcSampler, file = file_name)
       }
-      
-      #print(paste0("iteration ", i * it_save," out of ", iterations))
     }
   }
   
@@ -1123,13 +1116,12 @@ fit_ClaDS = function(tree,sample_fraction,iterations, thin = 50, file_name = NUL
       mcmcSampler = mcmcSampler,     
       iterations = iterations - n_run *it_save,            
       thin = thin,  
-      nCPU = nCPU)   
+      nCPU = nCPU,
+      verbose=verbose)   
     
     if (! is.null(file_name)){
-      save(mcmcSampler, file = file_name)
+      saveRDS(mcmcSampler, file = file_name)
     }
-    
-    #print(paste0("iteration ", iterations," out of ", iterations))
   }
 
   return(mcmcSampler)

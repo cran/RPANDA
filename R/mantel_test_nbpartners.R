@@ -1,5 +1,7 @@
 mantel_test_nbpartners <-
-function(network, tree_A, tree_B = NULL, method="Jaccard_binary", nperm=1000, correlation="Pearson"){
+function(network, tree_A, tree_B = NULL, method="Jaccard_binary", 
+         nperm=1000, correlation="Pearson",
+         verbose=TRUE){
   
   if (!correlation %in% c("Pearson", "Spearman")) {stop("\"correlation\" must be among 'Pearson' or 'Spearman'.")}
   if (!is.numeric(nperm)) {stop("Please provide a numeric number of permutations (\"nperm\").")}
@@ -40,20 +42,20 @@ function(network, tree_A, tree_B = NULL, method="Jaccard_binary", nperm=1000, co
   compute_eco_dist <- function(network){
     # binary Jaccard distances
     if (method=="Jaccard_binary"){
-      jaccard_A <- as.matrix(vegan::vegdist(t(network), "jaccard", binary=T))
+      jaccard_A <- as.matrix(vegan::vegdist(t(network), "jaccard", binary=TRUE))
       eco_A <- jaccard_A
     }
     
     # quantitative Jaccard distances
     if (method=="Jaccard_weighted"){
-      jaccard_A <- as.matrix(vegan::vegdist(t(network), "jaccard", binary=F))
+      jaccard_A <- as.matrix(vegan::vegdist(t(network), "jaccard", binary=FALSE))
       eco_A <- jaccard_A
     }
     
     
     # Bray-Curtis dissimilarity 
     if (method=="Bray-Curtis"){
-      bray_A <- as.matrix(vegan::vegdist(t(network), "bray", binary=F))
+      bray_A <- as.matrix(vegan::vegdist(t(network), "bray", binary=FALSE))
       eco_A <- bray_A
     }
     
@@ -87,10 +89,10 @@ function(network, tree_A, tree_B = NULL, method="Jaccard_binary", nperm=1000, co
   names(results) <-  c("nb_A","nb_B","mantel_cor_A","pvalue_upper_A","pvalue_lower_A", "mantel_cor_B", "pvalue_upper_B", "pvalue_lower_B")
   
   if (length(unique(as.vector(cophe_A)))<3) {
-    print("The phylogenetic distance matrix is composed of only 2 different values (because of polytomies?).")
+    if (verbose) print("The phylogenetic distance matrix is composed of only 2 different values (because of polytomies?).")
     return(results)}
   if (length(unique(as.vector(eco_A)))<3) {
-    print("The ecological distance matrix is composed of only 1 value (identical patterns of interactions across species?).")
+    if (verbose) print("The ecological distance matrix is composed of only 1 value (identical patterns of interactions across species?).")
     return(results)}
   
   

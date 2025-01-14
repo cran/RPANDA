@@ -8,8 +8,8 @@ Geological time scale
 Adds geological time scale (GTS) to plots.
 }
 \usage{
-add.gts(thickness, quaternary = T, is.phylo = F,
-        xpd.x = T, time.interval = 1, names = NULL, fill = T,
+add.gts(thickness, quaternary = TRUE, is.phylo = FALSE,
+        xpd.x = TRUE, time.interval = 1, names = NULL, fill = TRUE,
         cex = 1, padj = -0.5, direction = "rightwards")
 }
 
@@ -61,17 +61,19 @@ add.gts(thickness, quaternary = T, is.phylo = F,
 \author{Nathan Mazet}
 
 \examples{
-\dontrun{
+\donttest{
 # with a phylogeny
 data("Cetacea")
+oldpar <- par(no.readonly = TRUE)
 # first plot to get the dimensions of the gts
 plot(Cetacea, cex = 0.5, label.offset = 0.2, tip.color = "white")
-add.gts(-3, quaternary = T, is.phylo = T, xpd.x = F,
+add.gts(-3, quaternary = TRUE, is.phylo = TRUE, xpd.x = FALSE,
         names = c("Q.", "Pli.", "Miocene", "Oligocene", "Eoc."))
 # second plot to display the tree on the gts
-par(new = T)
+par(new = TRUE)
 plot(Cetacea, cex = 0.5, label.offset = 0.2)
 mtext("Time (Myrs)", side = 1, line = 3, at = 18)
+par(oldpar) # restore the old par
 
 # see Appendix S4 from Mazet et al. (2023) for more examples.
 

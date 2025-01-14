@@ -10,7 +10,8 @@ This function traverses a tree from the root to the tips, at every node computes
 }
 
 \usage{
-delineate_phylotypes(tree, thresh=97, sequences, method="pi")
+delineate_phylotypes(tree, thresh=97, sequences, 
+method="pi", verbose=TRUE)
 }
 
 \arguments{
@@ -30,6 +31,9 @@ a matrix representing the nucleotidic alignment of all the sequences present in 
 indicates which method to use to compute the average similarity: "mean" computes the average raw distances between pairs of sequences, "pi" (default) measures the nucleotidic diversity (Nei & Li, 1979) while controlling for gaps in the alignment, and "theta" measures the Watterson theta genetic diversity (Watterson, 1975) also controlling for gaps. 
 }
 
+\item{verbose}{
+if TRUE, enables printing of messages.
+}
 }
 
 
@@ -65,7 +69,9 @@ alignment <- as.character(woodmouse) # nucleotidic alignment
 tree <- midpoint.root(nj(dist.dna(woodmouse, pairwise.deletion = TRUE, 
 model = "K80"))) # rooted neighbor-joining tree
 
-# delineate_phylotypes(tree, thresh = 99, alignment, method = "pi")
+\donttest{
+delineate_phylotypes(tree, thresh = 99, alignment, method = "pi")
+}
 
 }
 

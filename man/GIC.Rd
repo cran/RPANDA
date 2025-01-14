@@ -45,15 +45,13 @@ Clavel, J., Aristide, L., Morlon, H., 2019. A Penalized Likelihood framework for
 \seealso{
 %% add later  \code{\link{sim_t_env}}  
 \code{\link{gic_criterion}}, 
-\code{\link{fit_t_pl}}
-\code{\link{mvgls}}
+\code{\link{fit_t_pl}},
+\code{\link[mvMORPH]{mvgls}}
 }
 
 \examples{
 \donttest{
-if(require(mvMORPH)){
-\dontshow{test = FALSE}
-if(test){
+      require(mvMORPH)
       set.seed(1)
       n <- 32 # number of species
       p <- 40 # number of traits
@@ -68,6 +66,4 @@ if(test){
       
       GIC(fit1); GIC(fit2)
       }
-}
-}
 }

@@ -1,22 +1,26 @@
-\name{fit_bd}
-\alias{fit_bd}
+\name{fit_bd_in_past}
+\alias{fit_bd_in_past}
 
 \title{
-Maximum likelihood fit of the general birth-death model
+Maximum likelihood fit of the general birth-death model excluding the recent past
 }
 \description{
-Fits the birth-death model with potentially time-varying rates and potentially missing extant species to a phylogeny, by maximum likelihood. Notations follow Morlon et al. PNAS 2011.
+Fits the birth-death model with potentially time-varying rates and potentially missing extant species to a phylogeny, by maximum likelihood while excluding the recent past. Notations follow Morlon et al. PNAS 2011.
 }
 \usage{
-fit_bd(phylo, tot_time, f.lamb, f.mu, lamb_par, mu_par, f = 1,
+fit_bd_in_past(phylo, tot_time, time_stop, f.lamb, f.mu, lamb_par, mu_par, desc, tot_desc, 
        meth = "Nelder-Mead", cst.lamb = FALSE, cst.mu = FALSE,
        expo.lamb = FALSE, expo.mu = FALSE, fix.mu = FALSE,
        dt=0, cond = "crown")
 }
 
+
 \arguments{
   \item{phylo}{
-an object of type 'phylo' (see ape documentation)
+an object of type 'phylo' (see ape documentation) that does not include any recent speciation (i.e. no speciation events between time_stop and the present). 
+}
+  \item{time_stop}{
+the age of the phylogeny where to stop the birth-death process: it excludes the recent past (between the present and time_stop), while conditioning on the survival of the lineages from time_stop to the present.
 }
   \item{tot_time}{
 the age of the phylogeny (crown age, or stem age if known). If working with crown ages, tot_time is given by max(node.age(phylo)$ages).
@@ -34,8 +38,11 @@ a numeric vector of initial values for the parameters of f.lamb to be estimated 
   \item{mu_par}{
 a numeric vector of initial values for the parameters of f.mu to be estimated (these values are used by the optimization algorithm). The length of this vector is used to compute the total number of parameters in the model, so to fit a model without extinction (for example), mu_par should be empty (vector of length 0). Otherwise aic values will be wrong.
 }
-  \item{f}{
-the fraction of extant species included in the phylogeny
+  \item{desc}{
+  the number of  lineages present at present in the reconstructed phylogenetic tree.
+}
+  \item{tot_desc}{
+  the total number of extant species (including in the unsampled ones). 
 }
   \item{meth}{
 optimization to use to maximize the likelihood function, see \emph{optim} for more details.
@@ -84,76 +91,57 @@ this is that negative speciation/extinction rates estimates can be returned. The
 \references{
 	Morlon, H., Parsons, T.L. and Plotkin, J.B. (2011) Reconciling molecular phylogenies with the fossil record \emph{Proc Nat Acad Sci} 108: 16327-16332
 	
-	Morlon, H. (2014) Phylogenetic approaches for studying diversification, Eco Lett 17:508-525
-
-	Morlon, H., Rolland, J. and Condamine, F. (2020) Response to Technical Comment ‘A cautionary note for users of linear diversification dependencies’, Eco Lett
+	Lewitus, E., Bittner, L., Malviya, S., Bowler, C., & Morlon, H. (2018) Clade-specific diversification dynamics of marine diatoms since the Jurassic \emph{Nature Ecology and Evolution}, 2(11), 1715–1723
+	
+  Perez-Lamarque, B., Öpik, M., Maliet, O., Afonso Silva, A., Selosse, M-A., Martos, F., Morlon, H. (2022) Analysing diversification dynamics using barcoding data: The case of an obligate mycorrhizal symbiont, \emph{Molecular Ecology} 31: 3496–3512
+	
 }
 
-\author{H Morlon}
+\author{H Morlon, E Lewitus, B Perez-Lamarque}
 
 \seealso{
-\code{\link{plot_fit_bd}}, \code{\link{plot_dtt}}, \code{\link{likelihood_bd}, \link{fit_env}}
+\code{\link{fit_env_in_past}},\code{\link{fit_bd}},\code{\link{plot_fit_bd}}, \code{\link{plot_dtt}}
 }
 
 \examples{
-# Some examples may take a little bit of time. Be patient!
+
+library(ape)
+library(phytools)
 
 data(Cetacea)
+
+plot(Cetacea)
 tot_time<-max(node.age(Cetacea)$ages)
 
+# slice the Cetaceae tree 10 Myr ago:
+time_stop=10
+sliced_tree <- Cetacea
+sliced_sub_trees <- treeSlice(sliced_tree,slice = tot_time-time_stop, trivial=TRUE)
+for (i in 1:length(sliced_sub_trees)){
+
+  if (Ntip(sliced_sub_trees[[i]])>1){
+  sliced_tree <- drop.tip(sliced_tree, 
+    tip=sliced_sub_trees[[i]]$tip.label[2:Ntip(sliced_sub_trees[[i]])])
+}}
+
+for (i in which(node.depth.edgelength(sliced_tree)>(tot_time-time_stop))){
+  temp = sliced_tree$edge.length[which(sliced_tree$edge[,2]==i)]-time_stop
+  sliced_tree$edge.length[which(sliced_tree$edge[,2]==i)] <- temp
+  }
+
+Ntip(sliced_tree) # 27 lineages present 10 Myr have survived until today
+
+# Now we can fit birth-death models excluding the 10 last Myr
+
 # Fit the pure birth model (no extinction) with a constant speciation rate
-\donttest{
+
 f.lamb <-function(t,y){y[1]}
 f.mu<-function(t,y){0}
 lamb_par<-c(0.09)
 mu_par<-c()
-result_cst <- fit_bd(Cetacea,tot_time,f.lamb,f.mu,lamb_par,mu_par,
-                     f=87/89,cst.lamb=TRUE,fix.mu=TRUE,dt=1e-3)
-result_cst$model <- "pure birth with constant speciation rate"
-} 
 
-# Fit the pure birth model (no extinction) with exponential variation
-# of the speciation rate with time
-\donttest{
-f.lamb <-function(t,y){y[1] * exp(y[2] * t)}
-f.mu<-function(t,y){0}
-lamb_par<-c(0.05, 0.01)
-mu_par<-c()
-result_exp <- fit_bd(Cetacea,tot_time,f.lamb,f.mu,lamb_par,mu_par,
-                     f=87/89,expo.lamb=TRUE,fix.mu=TRUE,dt=1e-3)
-result_exp$model <- "pure birth with exponential variation in speciation rate"
-}
+result_cst <- fit_bd_in_past(sliced_tree, tot_time, time_stop, f.lamb, f.mu, 
+                             desc=Ntip(Cetacea), tot_desc=89, lamb_par, mu_par,
+                             cst.lamb = TRUE, fix.mu=TRUE, dt=1e-3)
 
-
-# Fit the pure birth model (no extinction) with linear variation of
-# the speciation rate with time
-f.lamb <-function(t,y){abs(y[1] + y[2] * t)}
-# alternative formulation that can be used depending on the choice made to avoid negative rates: 
-# f.lamb <-function(t,y){pmax(0,y[1] + y[2] * t)}, see Morlon et al. (2020)
-\donttest{
-f.mu<-function(t,y){0}
-lamb_par<-c(0.09, 0.001)
-mu_par<-c()
-result_lin <- fit_bd(Cetacea,tot_time,f.lamb,f.mu,lamb_par,mu_par,f=87/89,fix.mu=TRUE,dt=1e-3)
-result_lin$model <- "pure birth with linear variation in speciation rate"
-}
-
-# Fit a birth-death model with exponential variation of the speciation
-# rate with time and constant extinction
-\donttest{
-f.lamb<-function(t,y){y[1] * exp(y[2] * t)}
-f.mu <-function(t,y){y[1]}
-lamb_par <- c(0.05, 0.01)
-mu_par <-c(0.005)
-result_bexp_dcst <- fit_bd(Cetacea,tot_time,f.lamb,f.mu,lamb_par,mu_par,
-                           f=87/89,expo.lamb=TRUE,cst.mu=TRUE,dt=1e-3)
-result_bexp_dcst$model <- "birth-death with exponential variation in speciation rate
-                           and constant extinction"
-}
-
-# Find the best model
-\donttest{
-index <- which.min(c(result_cst$aicc, result_exp$aicc, result_lin$aicc,result_bexp_dcst$aicc))
-rbind(result_cst, result_exp, result_lin, result_bexp_dcst)[index,]
-}
 }

@@ -99,13 +99,12 @@ Clavel, J., Aristide, L., Morlon, H., 2019. A Penalized Likelihood framework for
 \code{\link{phyl.pca_pl}},  
 \code{\link{GIC.fit_pl.rpanda}}, 
 \code{\link{gic_criterion}}
-\code{\link{mvgls}}
+\code{\link[mvMORPH]{mvgls}}
 }
 
 \examples{
 \donttest{
-\dontshow{test = FALSE}
-if(test){
+
 require(mvMORPH)
 set.seed(1)
 n <- 32 # number of species
@@ -127,6 +126,6 @@ fit_t_pl(trans$x, tree, model="BM", method="RidgeAlt")
 # Estimate the SE (similar to Pagel's lambda for BM). 
 # Advised with empirical datasets
 fit_t_pl(Y, tree, model="BM", method="RidgeAlt", SE=TRUE)
-}
-}
+
+  }
 }

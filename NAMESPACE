@@ -60,8 +60,8 @@ S3method(ancestral, fit_t.env)
 S3method(ancestral, fit_t.comp)
 
 
-export(fit_bd, fit_coal_cst, fit_coal_var, fit_env, fit_sgd, BICompare, spectR, JSDtree, JSDtree_cluster, sim_env_bd, JSDt_cluster, spectR_t)
-export(likelihood_bd, likelihood_coal_cst, likelihood_coal_var, likelihood_sgd)
+export(fit_bd, fit_coal_cst, fit_coal_var, fit_env, BICompare, spectR, JSDtree, JSDtree_cluster, sim_env_bd, JSDt_cluster, spectR_t)
+export(likelihood_bd, likelihood_coal_cst, likelihood_coal_var)
 export(plot_dtt, plot_fit_bd, plot_fit_env, plot_spectR, plot_BICompare, sim_sgd)
 export(fit_t_env,likelihood_t_env,sim_t_env,plot.fit_t.env,lines.fit_t.env)
 export(fit_t_env_ou,sim_t_env_ou,plot.fit_t.env.ou,lines.fit_t.env.ou)
@@ -75,7 +75,7 @@ export(plot_ClaDS_phylo, sim_ClaDS, fit_ClaDS0, plot_ClaDS0_chains, plot_ClaDS_c
 export(sim_MCBD)
 export(phylosignal_network,phylosignal_sub_network,plot_phylosignal_sub_network,mantel_test,mantel_test_nbpartners)
 export(theta_estimator,pi_estimator,delineate_phylotypes)
-
+export(fit_bd_in_past,fit_env_in_past)
 export(sim.BipartiteEvol,make_gen.BipartiteEvol,define_species.BipartiteEvol,build_network.BipartiteEvol,
        plot_div.BipartiteEvol, plot_net.BipartiteEvol)
 export(add.gts, apply_prob_dtt, div.models, div.rates, fit_bd_backbone_c, fit_bd_backbone, get.comb.shift, get.sampling.fractions, likelihood_bd_backbone, paleodiv, plot_phylo_comb, plot_prob_dtt, remove.model, shift.estimates, apply_prob_dtt, simul.comb.shift)

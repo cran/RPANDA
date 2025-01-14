@@ -1,11 +1,10 @@
-delineate_phylotypes <-
-function(tree, thresh=97, sequences, method="pi"){	
+delineate_phylotypes <- function(tree, thresh=97, sequences, method="pi", verbose=TRUE){	
   
-  if (!inherits(tree, "phylo")) {stop(print("object \"phy\" is not of class \"phylo\".\n"))}
-  if (!is.rooted(tree)) {stop(print("Please provide a rooted phylogeny"))}
-  if (!all(tree$tip.label %in% rownames(sequences))) {stop(print("Please provide a nucleotidic alignment with sequence names matching the tip labels of the phylogenetic tree"))}
+  if (!inherits(tree, "phylo")) {stop("object \"phy\" is not of class \"phylo\".\n")}
+  if (!is.rooted(tree)) {stop("Please provide a rooted phylogeny")}
+  if (!all(tree$tip.label %in% rownames(sequences))) {stop("Please provide a nucleotidic alignment with sequence names matching the tip labels of the phylogenetic tree")}
   
-  if (!method %in% c("pi","theta", "mean")){stop(print("Please provide a method among 'pi' or 'theta'"))}
+  if (!method %in% c("pi","theta", "mean")){stop("Please provide a method among 'pi' or 'theta'")}
   
   N.tip<-Ntip(tree)
   bins<-matrix(0,nrow=N.tip,ncol=2)
@@ -14,7 +13,7 @@ function(tree, thresh=97, sequences, method="pi"){
   
   it_OTU <- 0 
   if (N.tip==1){
-    print("single")
+    if (verbose) message("single")
     sequence<-tree$tip.label
     bins[sequence,1]<-1
   } else {
@@ -26,7 +25,7 @@ function(tree, thresh=97, sequences, method="pi"){
           if (method=="theta") mean_dist <- theta_estimator(sequences[which(rownames(sequences) %in% extracted_tree$tip.label),])
           if (method=="mean"){
             extracted_sequences <- as.DNAbin(sequences[which(rownames(sequences) %in% extracted_tree$tip.label),])
-            distances_matrix <- dist.dna(x=extracted_sequences, pairwise.deletion=T, as.matrix=F, model="raw") 
+            distances_matrix <- dist.dna(x=extracted_sequences, pairwise.deletion=TRUE, as.matrix=FALSE, model="raw") 
             mean_dist <- mean(as.vector(distances_matrix), na.rm=TRUE)
           }
           
@@ -41,11 +40,11 @@ function(tree, thresh=97, sequences, method="pi"){
         }
       }
   }
-  bins <- data.frame(bins, stringsAsFactors = F)
+  bins <- data.frame(bins, stringsAsFactors = FALSE)
   colnames(bins) <- c("phylotype", "representative_sequence")
   
-  print(paste0("Number of phylotypes (including singletons): ", it_OTU+length(which(bins$phylotype=="0"))))
-  print(paste0("Number of phylotypes (excluding singletons): ", it_OTU))
-  print(paste0("Number of singletons: ", length(which(bins$phylotype=="0"))))
+  if (verbose) message(paste0("Number of phylotypes (including singletons): ", it_OTU+length(which(bins$phylotype=="0"))))
+  if (verbose) message(paste0("Number of phylotypes (excluding singletons): ", it_OTU))
+  if (verbose) message(paste0("Number of singletons: ", length(which(bins$phylotype=="0"))))
   return(bins)
 }
